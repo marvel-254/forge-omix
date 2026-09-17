@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12",
+  "$id": "https://forge-omix.io/schemas/task.schema.json",
+  "title": "Omix Task",
+  "description": "Agent task definition for the Omix Builder AI workflow system. Tasks represent units of work that AI agents or human developers execute to build or modify the project. Example: { id: 'task_001', title: 'Add login form', type: 'feature', status: 'pending' }",
+  "type": "object",
+  "required": ["id", "title", "description", "type", "status", "priority"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^task_[a-zA-Z0-9_-]{4,}$",
+      "description": "Unique task identifier. Example: task_add_login_form"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Concise task title/summary."
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 5000,
+      "description": "Detailed task description with context and requirements."
+    },
+    "type": {
+      "type": "string",
+      "enum": ["feature", "fix", "refactor", "style", "test", "docs", "chore", "research", "design", "integration"],
+      "description": "Type/category of work. feature=new capability, fix=bug fix, refactor=restructure, style=visual/CSS, test=testing, docs=documentation, chore=maintenance, research=investigation, design=visual design, integration=connect systems."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["backlog", "todo", "in-progress", "review", "done", "cancelled"],
+      "description": "Current task status in the workflow."
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["critical", "high", "medium", "low"],
+      "description": "Task priority level."
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^task_[a-zA-Z0-9_-]{4,}$"
+      },
+      "description": "Task IDs that must be completed before this task can start."
+    },
+    "affectedScreens": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^page_[a-zA-Z0-9_-]{4,}$"
+      },
+      "description": "Page IDs affected by this task. References page ids from the project."
+    },
+    "affectedComponents": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^comp_[a-zA-Z0-9_-]{4,}$"
+      },
+      "description": "Component IDs affected by this task."
+    },
+    "acceptanceCriteria": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["description"],
+        "properties": {
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Description of the acceptance criterion."
+          },
+          "met": {
+            "type": "boolean",
+            "description": "Whether this criterion has been satisfied."
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "List of acceptance criteria that must be met for task completion."
+    },
+    "estimatedTokens": {
+      "type": "object",
+      "properties": {
+        "input": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Estimated input token count for AI processing."
+        },
+        "output": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Estimated output token count for AI generation."
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Estimated total token count (input + output)."
+        }
+      },
+      "additionalProperties": false
+    },
+    "assignee": {
+      "type": "string",
+      "description": "Agent or user ID assigned to this task."
+    },
+    "labels": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 30,
+        "pattern": "^[a-zA-Z0-9_-]+$"
+      },
+      "maxItems": 20,
+      "description": "Labels/tags for categorization. Example: [frontend, urgent, auth]"
+    },
+    "notes": {
+      "type": "string",
+      "maxLength": 5000,
+      "description": "Additional notes or context for the agent."
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Task creation timestamp."
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last update timestamp."
+    },
+    "completedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Task completion timestamp."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Task schema version. Example: 1.0.0"
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,17 @@
+{
+  "project": {
+    "id": "proj_01H9Z8EXAMPLE",
+    "name": "my SaaS App",
+    "description": "A modern SaaS application with authentication and dashboard",
+    "version": "1.0.0",
+    "framework": "react",
+    "cssStrategy": "tailwind",
+    "routerMode": "file",
+    "createdAt": "2026-09-16T12:00:00Z",
+    "updatedAt": "2026-09-16T12:00:00Z"
+  },
+  "builder": {
+    "version": "0.1.0",
+    "phase": "v1"
+  }
+}

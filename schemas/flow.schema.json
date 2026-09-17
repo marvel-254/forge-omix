@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12",
+  "$id": "https://forge-omix.io/schemas/flow.schema.json",
+  "title": "Omix Flow",
+  "description": "User flow or workflow definition for an Omix project. Flows describe multi-step processes, user journeys, or system workflows with states, transitions, and triggers. Example: { id: 'flow_checkout', name: 'Checkout Flow', steps: [...], transitions: [...] }",
+  "type": "object",
+  "required": ["id", "name", "steps", "transitions"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^flow_[a-zA-Z0-9_-]{4,}$",
+      "description": "Unique flow identifier. Example: flow_onboarding"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Human-readable flow name. Example: User Registration"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Detailed description of what this flow accomplishes."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Flow schema version. Example: 1.0.0"
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "name"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^step_[a-zA-Z0-9_-]{3,}$",
+            "description": "Unique step identifier within this flow."
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Step display name."
+          },
+          "description": {
+            "type": "string",
+            "description": "Step description."
+          },
+          "type": {
+            "type": "string",
+            "enum": ["page", "action", "decision", "api", "notification", "wait", "end"],
+            "description": "Type of step. page=show UI, action=perform task, decision=branch logic, api=external call, notification=message, wait=pause, end=terminal."
+          },
+          "target": {
+            "type": "string",
+            "description": "Target page ID, API endpoint, or action identifier."
+          },
+          "isStart": {
+            "type": "boolean",
+            "description": "Whether this is the starting step of the flow."
+          },
+          "isEnd": {
+            "type": "boolean",
+            "description": "Whether this is a terminal step."
+          },
+          "validation": {
+            "type": "object",
+            "description": "Validation rules for this step.",
+            "properties": {
+              "required": {
+                "type": "boolean",
+                "description": "Whether this step must complete before proceeding."
+              },
+              "rules": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "field": { "type": "string" },
+                    "rule": {
+                      "type": "string",
+                      "enum": ["required", "email", "minLength", "maxLength", "pattern", "custom"]
+                    },
+                    "value": {},
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "Ordered steps in the flow. First step with isStart=true is the entry point."
+    },
+    "transitions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["from", "to"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique transition identifier."
+          },
+          "from": {
+            "type": "string",
+            "description": "Source step ID."
+          },
+          "to": {
+            "type": "string",
+            "description": "Target step ID."
+          },
+          "condition": {
+            "type": "string",
+            "description": "Condition expression for this transition. Example: user.isAuthenticated"
+          },
+          "label": {
+            "type": "string",
+            "description": "Human-readable label for this transition. Example: Success"
+          },
+          "trigger": {
+            "type": "string",
+            "enum": ["auto", "user", "event", "timeout", "api"],
+            "description": "What triggers this transition."
+          },
+          "order": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Evaluation order when multiple transitions exist from the same step."
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "Transitions connecting steps. Define the flow's directed graph."
+    },
+    "triggers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique trigger identifier."
+          },
+          "type": {
+            "type": "string",
+            "enum": ["pageLoad", "userAction", "apiResponse", "timer", "webhook", "stateChange", "error"],
+            "description": "Type of trigger that initiates or advances the flow."
+          },
+          "source": {
+            "type": "string",
+            "description": "Source of the trigger. Example: page ID, event name, or API endpoint."
+          },
+          "condition": {
+            "type": "string",
+            "description": "Condition that must be true for the trigger to fire."
+          },
+          "payload": {
+            "type": "object",
+            "description": "Expected payload structure.",
+            "additionalProperties": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "External triggers that can initiate or advance the flow."
+    }
+  },
+  "additionalProperties": false
+}

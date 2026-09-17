@@ -1,0 +1,207 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12",
+  "$id": "https://forge-omix.io/schemas/component.schema.json",
+  "title": "Omix Component",
+  "description": "Component definition for the Omix visual builder. Components are the building blocks of pages, supporting nesting, props, styles, interactions, and responsive behavior. Example: { id: 'comp_btn1', type: 'Button', props: { label: 'Submit', variant: 'primary' }, children: [] }",
+  "type": "object",
+  "required": ["id", "type", "props"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^comp_[a-zA-Z0-9_-]{4,}$",
+      "description": "Unique component identifier. Example: comp_header_nav"
+    },
+    "type": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Component type. Can be a built-in primitive (Button, Text, Input, Media, Container) or a custom component name. Example: Button"
+    },
+    "name": {
+      "type": "string",
+      "maxLength": 100,
+      "description": "Human-readable display name. Example: Primary Submit Button"
+    },
+    "props": {
+      "type": "object",
+      "description": "Component properties/attributes. Keys and values are component-type-specific.",
+      "additionalProperties": true
+    },
+    "children": {
+      "type": "array",
+      "items": {
+        "$ref": "https://forge-omix.io/schemas/component.schema.json"
+      },
+      "description": "Nested child components. Allows recursive component trees."
+    },
+    "styles": {
+      "type": "object",
+      "properties": {
+        "base": {
+          "type": "object",
+          "description": "Base CSS styles as property-value pairs. Example: { display: 'flex', padding: '16px' }",
+          "additionalProperties": { "type": ["string", "number"] }
+        },
+        "variants": {
+          "type": "object",
+          "description": "Style variants keyed by variant name.",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": { "type": ["string", "number"] }
+          }
+        },
+        "responsive": {
+          "type": "object",
+          "description": "Breakpoint-specific style overrides.",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": { "type": ["string", "number"] }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "interactions": {
+      "type": "object",
+      "properties": {
+        "onClick": {
+          "$ref": "#/$defs/interactionHandler",
+          "description": "Click/tap interaction handler."
+        },
+        "onHover": {
+          "$ref": "#/$defs/interactionHandler",
+          "description": "Hover interaction handler."
+        },
+        "onFocus": {
+          "$ref": "#/$defs/interactionHandler",
+          "description": "Focus interaction handler."
+        },
+        "onLoad": {
+          "$ref": "#/$defs/interactionHandler",
+          "description": "Component mount/load interaction handler."
+        },
+        "onSubmit": {
+          "$ref": "#/$defs/interactionHandler",
+          "description": "Form submission handler."
+        },
+        "custom": {
+          "type": "object",
+          "description": "Custom event handlers.",
+          "additionalProperties": {
+            "$ref": "#/$defs/interactionHandler"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "responsive": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["breakpoint"],
+        "properties": {
+          "breakpoint": {
+            "type": "string",
+            "enum": ["xs", "sm", "md", "lg", "xl", "2xl"]
+          },
+          "props": {
+            "type": "object",
+            "description": "Prop overrides at this breakpoint.",
+            "additionalProperties": true
+          },
+          "styles": {
+            "type": "object",
+            "description": "Style overrides at this breakpoint.",
+            "additionalProperties": { "type": ["string", "number"] }
+          },
+          "hidden": {
+            "type": "boolean",
+            "description": "Whether to hide this component at this breakpoint."
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "Per-breakpoint component behavior overrides."
+    },
+    "accessibility": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string",
+          "description": "ARIA role. Example: button, navigation, dialog"
+        },
+        "label": {
+          "type": "string",
+          "description": "Accessible label (aria-label)."
+        },
+        "labelledBy": {
+          "type": "string",
+          "description": "ID of element that labels this component (aria-labelledby)."
+        },
+        "describedBy": {
+          "type": "string",
+          "description": "ID of element that describes this component (aria-describedby)."
+        },
+        "tabIndex": {
+          "type": "integer",
+          "description": "Tab order index. -1 removes from tab order."
+        },
+        "keyboardShortcuts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["key", "action"],
+            "properties": {
+              "key": { "type": "string" },
+              "action": { "type": "string" },
+              "modifier": {
+                "type": "string",
+                "enum": ["ctrl", "alt", "shift", "meta"]
+              }
+            }
+          },
+          "description": "Keyboard shortcuts for this component."
+        }
+      },
+      "additionalProperties": false
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Component schema version. Example: 1.0.0"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "interactionHandler": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["navigate", "apiCall", "stateUpdate", "emit", "custom"],
+          "description": "Type of interaction handler."
+        },
+        "target": {
+          "type": "string",
+          "description": "Target page ID, API endpoint, or state key."
+        },
+        "params": {
+          "type": "object",
+          "description": "Parameters to pass with the action.",
+          "additionalProperties": true
+        },
+        "method": {
+          "type": "string",
+          "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"],
+          "description": "HTTP method for apiCall type."
+        },
+        "condition": {
+          "type": "string",
+          "description": "Conditional expression for when this handler fires."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+    "name": "stor1",
+    "description": "stor1 - deployment test",
+    "repository": "https://github.com/r33ya/stor1",
+    "branch": "main",
+    "build_pack": "dockerfile",
+    "ports_exposes": "3000",
+    "health_check_path": "/health",
+    "environment": {},
+    "storages": [
+        {
+            "name": "data",
+            "mount_path": "/data",
+            "size": 1
+        }
+    ]
+}
