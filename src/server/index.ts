@@ -5,11 +5,13 @@ import { serve } from '@hono/node-server'
 import { setupValidatedRoutes } from './routes/validated'
 import apiRouter from './routes'
 import { runMigrations } from './db'
+import { rateLimit, cleanupRateLimitStore } from './middleware/rateLimit'
 
 const app = new Hono<{ Variables: { validated?: unknown } }>()
 
 app.use('*', logger())
 app.use('*', cors())
+app.use('/api/*', rateLimit(100, 15 * 60 * 1000))
 
 app.get('/health', (c) => {
   return c.json({ status: 'healthy', timestamp: new Date().toISOString() })
@@ -26,6 +28,7 @@ if (process.env.NODE_ENV !== 'test') {
     console.error('Initial migration failed:', err)
     process.exit(1)
   })
+  cleanupRateLimitStore()
 }
 
 const port = Number(process.env.PORT) || 3001

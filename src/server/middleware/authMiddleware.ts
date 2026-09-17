@@ -14,7 +14,7 @@ const users: AuthUser[] = [
   {
     id: 'user1',
     email: 'user@example.com',
-    password: 'hashed_password', // In real app, this would be a hashed password
+    password: 'hashed_password',
     role: 'user',
   },
   {
@@ -26,6 +26,28 @@ const users: AuthUser[] = [
 ];
 
 /**
+ * Get JWT secret from environment or throw in production.
+ * In development, falls back to a dev secret only if explicitly enabled.
+ */
+export function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  
+  if (!secret) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('JWT_SECRET environment variable is required in production');
+    }
+    const devSecret = process.env.DEV_JWT_SECRET;
+    if (!devSecret) {
+      throw new Error('JWT_SECRET or DEV_JWT_SECRET must be set');
+    }
+    console.warn('⚠️ Using DEV_JWT_SECRET - not suitable for production');
+    return devSecret;
+  }
+  
+  return secret;
+}
+
+/**
  * Authentication middleware
  * @param roles - Allowed roles for the route
  * @returns Hono middleware function
@@ -33,7 +55,6 @@ const users: AuthUser[] = [
 export function authMiddleware(roles: string[] = ['user']) {
   return async (c: Context, next: Next) => {
     try {
-      // Get token from Authorization header
       const authHeader = c.req.header('Authorization');
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return createErrorResponse(c, 'UNAUTHORIZED', 'No token provided', 401);
@@ -41,21 +62,18 @@ export function authMiddleware(roles: string[] = ['user']) {
 
       const token = authHeader.split(' ')[1];
 
-      // Verify token
-      const payload = await verify(token, process.env.JWT_SECRET || 'secret', 'HS256');
+      // Verify token with proper secret handling
+      const payload = await verify(token, getJwtSecret(), 'HS256');
 
-      // Check if user exists
       const user = users.find((u) => u.id === payload.id);
       if (!user) {
         return createErrorResponse(c, 'UNAUTHORIZED', 'Invalid token', 401);
       }
 
-      // Check if user has required role
       if (!roles.includes(user.role)) {
         return createErrorResponse(c, 'FORBIDDEN', 'Insufficient permissions', 403);
       }
 
-      // Attach user to context
       c.set('user' as never, user as never);
       await next();
     } catch (error) {
@@ -66,7 +84,6 @@ export function authMiddleware(roles: string[] = ['user']) {
 
 /**
  * Admin-only authentication middleware
- * @returns Hono middleware function
  */
 export function adminMiddleware() {
   return authMiddleware(['admin']);
