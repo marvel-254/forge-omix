@@ -4,3 +4,7 @@ export * from './Card';
 export * from './Navbar';
 export * from './Chart';
 export * from './Table';
+export * from './Badge';
+export * from './Avatar';
+export * from './Separator';
+export * from './Text';
