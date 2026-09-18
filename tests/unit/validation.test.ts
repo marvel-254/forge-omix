@@ -260,6 +260,15 @@ describe('TaskSchema', () => {
     expect(TaskSchema.safeParse({ ...validTask, status: 'invalid' }).success).toBe(false)
   })
 
+  it('rejects empty label entries', () => {
+    expect(TaskSchema.safeParse({ ...validTask, labels: ['ok', ''] }).success).toBe(false)
+  })
+
+  it('accepts optional context', () => {
+    const data = { ...validTask, context: { source: 'agent' } }
+    expect(TaskSchema.safeParse(data).success).toBe(true)
+  })
+
   it('accepts full task with acceptanceCriteria, estimatedTokens, labels', () => {
     const data = {
       ...validTask,
@@ -301,6 +310,20 @@ describe('TemplateSchema', () => {
 
   it('rejects wrong version pattern', () => {
     expect(TemplateSchema.safeParse({ ...validTemplate, version: 'v1' }).success).toBe(false)
+  })
+
+  it('requires schema (canonical required field)', () => {
+    const { schema, ...rest } = validTemplate
+    expect(TemplateSchema.safeParse(rest).success).toBe(false)
+  })
+
+  it('rejects empty tags array entries', () => {
+    expect(TemplateSchema.safeParse({ ...validTemplate, tags: ['ok', ''] }).success).toBe(false)
+  })
+
+  it('accepts optional importMetadata', () => {
+    const data = { ...validTemplate, importMetadata: { source: 'file.json' } }
+    expect(TemplateSchema.safeParse(data).success).toBe(true)
   })
 })
 
@@ -530,6 +553,26 @@ describe('shared templateSchema (lib/validations)', () => {
 
   it('rejects missing name', () => {
     const data = { id: 'tmpl_dashboard', version: '1.0.0' }
+    expect(templateSchema.safeParse(data).success).toBe(false)
+  })
+
+  it('rejects empty tags array entries', () => {
+    const data = { id: 'tmpl_dashboard', name: 'Dashboard', version: '1.0.0', tags: ['ok', ''] }
+    expect(templateSchema.safeParse(data).success).toBe(false)
+  })
+
+  it('rejects invalid category', () => {
+    const data = { id: 'tmpl_dashboard', name: 'Dashboard', version: '1.0.0', category: 'invalid' }
+    expect(templateSchema.safeParse(data).success).toBe(false)
+  })
+
+  it('rejects non-semver version', () => {
+    const data = { id: 'tmpl_dashboard', name: 'Dashboard', version: 'v1' }
+    expect(templateSchema.safeParse(data).success).toBe(false)
+  })
+
+  it('rejects bad id pattern', () => {
+    const data = { id: 'bad-id', name: 'Dashboard', version: '1.0.0' }
     expect(templateSchema.safeParse(data).success).toBe(false)
   })
 })

@@ -188,6 +188,7 @@ export interface Task {
   assignee?: string
   labels?: string[]
   notes?: string
+  context?: Record<string, unknown>
   createdAt?: string
   updatedAt?: string
   completedAt?: string
@@ -217,7 +218,8 @@ export interface Template {
     image?: string
     demoUrl?: string
   }
-  schema?: Record<string, unknown>
+  schema: Record<string, unknown>
+  importMetadata?: Record<string, unknown>
   createdAt?: string
   updatedAt?: string
 }

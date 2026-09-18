@@ -9,6 +9,7 @@ import {
   resolveActivePage,
 } from './puckBridge'
 import { canvasRegistry, defaultPropsFor } from './registry'
+import { buildTokenCssVars } from './themeVars'
 import type { CanvasViewport } from './useCanvas'
 import { Button } from '../components/ui/Button'
 
@@ -35,7 +36,6 @@ export function Canvas({ viewport = 'desktop', onViewportChange }: CanvasProps) 
   const canvasRevision = useSchemaStore((s) => s.canvasRevision)
   const draggingType = useSchemaStore((s) => s.draggingLibraryType)
   const setDraggingType = useSchemaStore((s) => s.setDraggingLibraryType)
-  const updateProject = useSchemaStore((s) => s.actions.updateProject)
   const addComponentToPage = useSchemaStore((s) => s.actions.addComponentToPage)
   const selectComponent = useSchemaStore((s) => s.selectComponent)
   const setSelectedIds = useSchemaStore((s) => s.setSelectedIds)
@@ -56,14 +56,57 @@ export function Canvas({ viewport = 'desktop', onViewportChange }: CanvasProps) 
   const data = useMemo(() => pageToPuckData(project, activePageId), [project, activePageId])
   const page = resolveActivePage(project, activePageId)
 
-  const onChange = useCallback(
-    (nextData: Data) => {
-      if (!project) return
-      const updated = applyPuckContentToPage(project, activePageId, nextData.content)
-      updateProject(updated as unknown as Record<string, unknown>)
-    },
-    [project, activePageId, updateProject]
+  // Theme the canvas from project design tokens: overrides for the shadcn
+  // CSS variables on the drop-zone wrapper, injected into Puck's iframe so
+  // rendered components inside it retheme too.
+  const tokenVars = useMemo(() => buildTokenCssVars(project?.designTokens), [project?.designTokens])
+  const tokenStyle = useMemo(
+    () => Object.fromEntries(Object.entries(tokenVars).map(([k, v]) => [k, v])) as React.CSSProperties,
+    [tokenVars]
   )
+  const tokenCssText = useMemo(
+    () =>
+      Object.entries(tokenVars)
+        .map(([k, v]) => `${k}:${v}`)
+        .join(';'),
+    [tokenVars]
+  )
+  useEffect(() => {
+    // Puck creates its iframe asynchronously after mount, so retry briefly.
+    let attempts = 0
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const inject = () => {
+      const iframe = fitFrameRef.current?.querySelector('iframe')
+      const doc = iframe?.contentDocument
+      if (!doc || !doc.head) {
+        if (attempts++ < 40) timer = setTimeout(inject, 50)
+        return
+      }
+      let style = doc.getElementById('omix-token-theme')
+      if (!style) {
+        style = doc.createElement('style')
+        style.id = 'omix-token-theme'
+        doc.head.appendChild(style)
+      }
+      style.textContent = tokenCssText ? `:root{${tokenCssText}}` : ''
+    }
+    inject()
+    return () => {
+      if (timer) clearTimeout(timer)
+    }
+  }, [tokenCssText, canvasRevision, page.id])
+
+  // NOTE: Puck subscribes to onChange once at mount and keeps calling that
+  // first closure forever, so this handler must NOT close over `project` /
+  // `activePageId` (they would freeze at remount time and clobber newer
+  // store-side edits on merge). Read live state via getState() instead.
+  const onChange = useCallback((nextData: Data) => {
+    const state = useSchemaStore.getState()
+    const current = state.project
+    if (!current) return
+    const updated = applyPuckContentToPage(current, state.activePageId, nextData.content)
+    state.actions.updateProject(updated as unknown as Record<string, unknown>)
+  }, [])
 
   const onAction = useCallback(
     (action: PuckAction, appState: AppState) => {
@@ -152,11 +195,15 @@ export function Canvas({ viewport = 'desktop', onViewportChange }: CanvasProps) 
   const handleDrop = useCallback(
     (event: DragEvent<HTMLDivElement>) => {
       event.preventDefault()
-      setIsDropTarget(false)
-      setDraggingType(null)
+      // Read the drag payload BEFORE clearing: zustand set() is synchronous,
+      // so reading draggingLibraryType after setDraggingType(null) would
+      // always fall through to dataTransfer (which some browsers don't
+      // propagate). The store is the source of truth, dataTransfer the fallback.
       const type =
         useSchemaStore.getState().draggingLibraryType ??
         event.dataTransfer.getData('text/omix-component')
+      setIsDropTarget(false)
+      setDraggingType(null)
       if (!type || !(type in canvasRegistry)) return
       const component = {
         id: 'comp_' + Math.random().toString(36).slice(2, 10),
@@ -170,10 +217,10 @@ export function Canvas({ viewport = 'desktop', onViewportChange }: CanvasProps) 
 
   if (!project || !page) {
     return (
-      <div className="flex-1 flex items-center justify-center text-neutral-500">
-        <div className="text-center">
-          <p className="mb-3">No page open.</p>
-          <p className="text-sm">Create a project to start editing.</p>
+      <div className="flex flex-1 items-center justify-center bg-neutral-50">
+        <div className="px-4 py-10 text-center">
+          <p className="text-sm font-medium text-neutral-600">No page open</p>
+          <p className="mt-1 text-xs text-neutral-400">Create a project to start editing.</p>
         </div>
       </div>
     )
@@ -209,6 +256,7 @@ export function Canvas({ viewport = 'desktop', onViewportChange }: CanvasProps) 
       </div>
       <div
         ref={fitFrameRef}
+        style={tokenStyle}
         className={`relative flex-1 min-h-0 ${
           isDropTarget ? 'ring-2 ring-inset ring-primary-400' : ''
         }`}

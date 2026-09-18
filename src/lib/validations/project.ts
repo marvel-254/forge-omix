@@ -23,6 +23,10 @@ export const projectSchema = z
     templates: z.array(z.unknown()).optional(),
     designTokens: z.record(z.unknown()).optional(),
     settings: z.record(z.unknown()).optional(),
+    // Composite GETs return timestamps and clients echo them back on save;
+    // accepted here (and dropped by pickProjectColumns) so round-trips pass.
+    createdAt: z.string().optional(),
+    updatedAt: z.string().optional(),
   })
   .strict()
 

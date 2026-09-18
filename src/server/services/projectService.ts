@@ -46,6 +46,21 @@ const RELATIONAL_KEYS = new Set([
 /** Columns the projects table actually accepts. */
 const PROJECT_COLUMNS = new Set(['name', 'description', 'version', 'framework', 'cssStrategy', 'routerMode', 'settings'])
 
+/**
+ * Child-row ids are globally unique (single-column PKs), while the canonical
+ * schema scopes ids per project (every project starts with `page_home`).
+ * Rows are stored as `${projectId}:${canonicalId}` — mirroring the existing
+ * `tok_${projectId}` design-token convention — and unscoped on reassembly.
+ */
+function scopedChildId(projectId: string, id: string) {
+  return `${projectId}:${id}`
+}
+
+function unscopedChildId(projectId: string, id: string) {
+  const prefix = `${projectId}:`
+  return id.startsWith(prefix) ? id.slice(prefix.length) : id
+}
+
 export function pickProjectColumns(payload: ServerProjectPayload) {
   const columns: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(payload)) {
@@ -72,7 +87,7 @@ export async function writeProjectChildren(
       // Everything except the projected columns lives in the `schema` JSON column.
       const { id, projectId: _pid, path, title, description, ...rest } = page
       await db.insert(pages).values({
-        id,
+        id: scopedChildId(projectId, id),
         projectId,
         path: typeof path === 'string' ? path : '/',
         title: typeof title === 'string' ? title : id,
@@ -92,7 +107,7 @@ export async function writeProjectChildren(
       if (typeof component.id !== 'string') continue
       const { id, projectId: _pid, type, name, ...rest } = component
       await db.insert(components).values({
-        id,
+        id: scopedChildId(projectId, id),
         projectId,
         type: typeof type === 'string' ? type : 'unknown',
         name: typeof name === 'string' ? name : null,
@@ -111,7 +126,7 @@ export async function writeProjectChildren(
       if (typeof flow.id !== 'string') continue
       const { id, projectId: _pid, name, description, version, steps, transitions, triggers } = flow
       await db.insert(flows).values({
-        id,
+        id: scopedChildId(projectId, id),
         projectId,
         name: typeof name === 'string' ? name : id,
         description: typeof description === 'string' ? description : null,
@@ -173,7 +188,7 @@ export async function reassembleProject(projectId: string) {
     updatedAt: project.updatedAt?.toISOString(),
     pages: pageRows.map((row) => ({
       ...(row.schema as Record<string, unknown>),
-      id: row.id,
+      id: unscopedChildId(projectId, row.id),
       path: row.path,
       title: row.title,
       ...(row.description ? { description: row.description } : {}),
@@ -181,12 +196,12 @@ export async function reassembleProject(projectId: string) {
     })),
     components: componentRows.map((row) => ({
       ...(row.schema as Record<string, unknown>),
-      id: row.id,
+      id: unscopedChildId(projectId, row.id),
       type: row.type,
       ...(row.name ? { name: row.name } : {}),
     })),
     flows: flowRows.map((row) => ({
-      id: row.id,
+      id: unscopedChildId(projectId, row.id),
       name: row.name,
       ...(row.description ? { description: row.description } : {}),
       version: row.version,

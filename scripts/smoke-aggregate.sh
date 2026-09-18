@@ -23,9 +23,9 @@ echo "--- 2. reassemble:"
 curl -s "$B/api/projects/proj_smoketest1/project"
 echo
 
-echo "--- 3. aggregate save (rename + page edit + token change):"
+echo "--- 3. aggregate save (rename + page edit + token change; echoes server timestamps like a client round-trip):"
 curl -s -X PUT "$B/api/projects/proj_smoketest1/project" -H 'Content-Type: application/json' \
-  -d '{"name":"Smoke Test v2","pages":[{"id":"page_home","path":"/","title":"Home","components":[{"id":"comp_btn1","type":"Button","props":{"label":"Changed"}}]}],"designTokens":{"colors":{"primary":"#10B981"}}}'
+  -d '{"name":"Smoke Test v2","pages":[{"id":"page_home","path":"/","title":"Home","components":[{"id":"comp_btn1","type":"Button","props":{"label":"Changed"}}]}],"designTokens":{"colors":{"primary":"#10B981"}},"createdAt":"2026-01-01T00:00:00.000Z","updatedAt":"2026-01-01T00:00:00.000Z"}'
 echo
 
 echo "--- 4. reassemble after save:"

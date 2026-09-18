@@ -79,6 +79,7 @@ router.post(
       const composite = await reassembleProject(id)
       return createApiResponse(c, composite, 201)
     } catch (error) {
+      console.error('[POST /api/projects] failed:', error)
       return createErrorResponse(c, 'DATABASE_ERROR', 'Failed to create project')
     }
   }
@@ -123,15 +124,18 @@ router.put(
 )
 
 // Replace the full canonical project for an existing row (aggregate save).
-router.put('/:id/project', async (c) => {
+router.put('/:id/project', createValidationMiddleware(projectSchema), async (c) => {
   try {
     const id = c.req.param('id')
+    if (typeof id !== 'string') {
+      return createErrorResponse(c, 'BAD_REQUEST', 'Missing project id')
+    }
     const existing = await db.select().from(projects).where(eq(projects.id, id)).get()
     if (!existing) {
       return createErrorResponse(c, 'NOT_FOUND', 'Project not found', 404)
     }
 
-    const payload = (await c.req.json()) as ServerProjectPayload
+    const payload = c.get('validatedData') as ServerProjectPayload
     const { id: _ignored, ...updates } = pickProjectColumns(payload)
 
     await db
@@ -146,6 +150,7 @@ router.put('/:id/project', async (c) => {
     const composite = await reassembleProject(id)
     return createApiResponse(c, composite)
   } catch (error) {
+    console.error('[PUT /:id/project] failed:', error)
     return createErrorResponse(c, 'DATABASE_ERROR', 'Failed to save project')
   }
 })

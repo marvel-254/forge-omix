@@ -101,13 +101,16 @@ export function EditorShell() {
 
   if (!project) {
     return (
-      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
-        <div className="text-center max-w-md p-8">
-          <h1 className="text-3xl font-bold text-neutral-900 mb-2">forge@omix</h1>
-          <p className="text-neutral-600 mb-6">
+      <div className="min-h-screen bg-neutral-100 flex items-center justify-center p-4">
+        <div className="w-full max-w-md rounded-xl border border-neutral-200 bg-white p-8 text-center shadow-sm">
+          <div className="mx-auto mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-primary-500 text-lg font-bold text-white">
+            O
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-neutral-900">forge@omix</h1>
+          <p className="mt-1 text-sm text-neutral-500 mb-6">
             AI-native visual software builder
           </p>
-          <div className="flex items-center justify-center gap-3">
+          <div className="flex items-center justify-center gap-2">
             <Button onClick={() => void createProjectOnServer()}>Create new project</Button>
             <label className="inline-block">
               <span className="sr-only">Import project JSON</span>
@@ -132,13 +135,18 @@ export function EditorShell() {
                   }
                 }}
               />
-              <span className="inline-flex cursor-pointer items-center justify-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-medium hover:bg-neutral-50">
+              <span className="inline-flex h-10 cursor-pointer items-center justify-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-medium hover:bg-neutral-50">
                 Import JSON
               </span>
             </label>
           </div>
+          <div className="my-5 flex items-center gap-3 text-xs text-neutral-400">
+            <span className="h-px flex-1 bg-neutral-200" />
+            or open an existing project
+            <span className="h-px flex-1 bg-neutral-200" />
+          </div>
           <form
-            className="mt-4 flex items-center gap-2"
+            className="flex items-center gap-2"
             onSubmit={(e) => {
               e.preventDefault()
               const input = e.currentTarget.elements.namedItem('projectId')
@@ -155,10 +163,8 @@ export function EditorShell() {
           {saveState === 'error' && saveError && (
             <p className="mt-2 text-xs text-red-600">{saveError}</p>
           )}
-          <p className="mt-1 text-xs text-neutral-400">
+          <p className="mt-5 text-xs leading-relaxed text-neutral-400">
             Projects are saved to the API when the server is reachable; otherwise they stay local.
-          </p>
-          <p className="mt-4 text-xs text-neutral-400">
             Exports match the universal schema (schemas/project.schema.json).
           </p>
         </div>
@@ -169,19 +175,32 @@ export function EditorShell() {
   return (
     <div className="h-screen flex flex-col bg-neutral-50">
       {/* Header */}
-      <header className="flex items-center gap-3 px-4 py-2 bg-white border-b">
-        <span className="font-semibold text-neutral-900">forge@omix</span>
-        <span className="text-neutral-300">|</span>
-        <span className="text-sm text-neutral-500 truncate max-w-[240px]">
+      <header className="flex h-12 items-center gap-3 bg-white px-4 shadow-[0_1px_0_0_rgb(0_0_0/0.06)]">
+        <span className="font-semibold tracking-tight text-neutral-900">forge@omix</span>
+        <span className="h-4 w-px bg-neutral-200" aria-hidden="true" />
+        <span className="max-w-[240px] truncate text-sm text-neutral-500">
           {project.name}
-        </span>          <div className="ml-auto flex items-center gap-2">
-            <span className="text-xs text-neutral-400">v{project.version}</span>
+        </span>
+        <div className="ml-auto flex items-center gap-2">
+          <span className="text-xs tabular-nums text-neutral-400">v{project.version}</span>
+          <span
+            className={`flex items-center gap-1.5 text-xs ${
+              saveState === 'error' ? 'text-red-600' : 'text-neutral-500'
+            }`}
+            title={saveError ?? undefined}
+          >
             <span
-              className="text-xs text-neutral-500"
-              title={saveError ?? undefined}
-            >
+              aria-hidden="true"
+              className={`inline-block h-1.5 w-1.5 rounded-full ${
+                saveState === 'saving'
+                  ? 'animate-pulse bg-amber-400'
+                  : saveState === 'error'
+                    ? 'bg-red-500'
+                    : 'bg-emerald-500'
+              }`}
+            />
               {saveState === 'saving' && 'Saving…'}
-              {saveState === 'saved' && '✓ Saved'}
+              {saveState === 'saved' && 'Saved'}
               {saveState === 'error' && 'Save failed'}
             </span>
             <Button size="sm" variant="outline" onClick={handleSave} disabled={saveState === 'saving'}>
@@ -207,14 +226,14 @@ export function EditorShell() {
                     type="button"
                     onClick={() => setActivePage(p.id)}
                     aria-pressed={p.id === activePageId}
-                    className={`flex-1 text-left px-2 py-1.5 rounded text-sm transition-colors ${
+                    className={`flex-1 min-w-0 text-left px-2 py-1.5 rounded-md text-sm transition-colors ${
                       p.id === activePageId
                         ? 'bg-primary-100 text-primary-900 font-medium'
                         : 'hover:bg-neutral-100 text-neutral-700'
                     }`}
                   >
-                    <span className="text-neutral-400 mr-2">{p.path}</span>
-                    {p.title}
+                    <span className="block truncate leading-tight">{p.title}</span>
+                    <span className="block truncate text-xs leading-tight text-neutral-400">{p.path}</span>
                   </button>
                   {pages.length > 1 && (
                     <Button
@@ -276,35 +295,8 @@ export function EditorShell() {
           <div className="flex-1 overflow-y-auto">
             {panelTab === 'properties' ? <PropertiesPanel /> : <LayersPanel />}
           </div>
-          <div className="border-t p-2">
-            <ViewportSwitcher viewport={viewport} onChange={setViewport} />
-          </div>
         </aside>
       </div>
-    </div>
-  )
-}
-
-function ViewportSwitcher({
-  viewport,
-  onChange,
-}: {
-  viewport: 'desktop' | 'tablet' | 'mobile'
-  onChange: (v: 'desktop' | 'tablet' | 'mobile') => void
-}) {
-  return (
-    <div className="flex gap-1">
-      {(['desktop', 'tablet', 'mobile'] as const).map((vp) => (
-        <Button
-          key={vp}
-          size="sm"
-          variant={viewport === vp ? 'default' : 'outline'}
-          aria-pressed={viewport === vp}
-          onClick={() => onChange(vp)}
-        >
-          {vp}
-        </Button>
-      ))}
     </div>
   )
 }

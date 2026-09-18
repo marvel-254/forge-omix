@@ -3,10 +3,11 @@ import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { Card } from '../components/ui/Card'
 import { Navbar } from '../components/ui/Navbar'
-import { Chart } from '../components/ui/Chart'
+import { Chart, type ChartType } from '../components/ui/Chart'
 import { Table } from '../components/ui/Table'
 import { resolveTokenRefs } from './ComponentRenderer'
 import { useSchemaStore } from '../store/schemaStore'
+import { useInstancePresentation } from './presentation'
 
 /**
  * Canvas component registry.
@@ -75,6 +76,7 @@ interface ButtonRenderProps extends BaseRenderProps {
   variant?: string
   size?: string
   disabled?: boolean
+  icon?: string
   backgroundColor?: unknown
 }
 
@@ -100,25 +102,35 @@ const ButtonConfig: ComponentConfig = {
       ],
     },
     disabled: boolField('Disabled'),
+    icon: { type: 'text', label: 'Icon (glyph)' },
   },
   defaultProps: {
     label: 'Button',
     variant: 'primary',
     size: 'md',
     disabled: false,
+    icon: '',
   },
   render: (props: ButtonRenderProps) => {
-    const resolved = useResolved(props as unknown as Record<string, unknown>)
+    const pres = useInstancePresentation(props.id)
+    const resolved = useResolved({
+      ...(props as unknown as Record<string, unknown>),
+      ...(pres?.overrides ?? {}),
+    })
+    if (pres && !pres.visible) return <></>
     return (
       <Button
         variant={mapButtonVariant(resolved.variant) as 'default'}
         size={mapButtonSize(resolved.size)}
         disabled={Boolean(resolved.disabled)}
-        style={
-          typeof resolved.backgroundColor === 'string'
+        icon={resolved.icon ? String(resolved.icon) : undefined}
+        style={{
+          ...pres?.style,
+          ...(typeof resolved.backgroundColor === 'string'
             ? { backgroundColor: resolved.backgroundColor }
-            : undefined
-        }
+            : {}),
+        }}
+        {...(pres?.a11y ?? {})}
       >
         {String(resolved.label ?? 'Button')}
       </Button>
@@ -149,13 +161,20 @@ const InputConfig: ComponentConfig = {
     required: false,
   },
   render: (props: InputRenderProps) => {
-    const resolved = useResolved(props as unknown as Record<string, unknown>)
+    const pres = useInstancePresentation(props.id)
+    const resolved = useResolved({
+      ...(props as unknown as Record<string, unknown>),
+      ...(pres?.overrides ?? {}),
+    })
+    if (pres && !pres.visible) return <></>
     return (
       <Input
         label={resolved.label ? String(resolved.label) : undefined}
         type={resolved.type ? String(resolved.type) : 'text'}
         placeholder={resolved.placeholder ? String(resolved.placeholder) : undefined}
         required={Boolean(resolved.required)}
+        style={pres?.style}
+        {...(pres?.a11y ?? {})}
       />
     )
   },
@@ -184,21 +203,26 @@ const CardConfig: ComponentConfig = {
     elevation: 1,
   },
   render: (props: CardRenderProps) => {
-    const resolved = useResolved(props as unknown as Record<string, unknown>)
+    const pres = useInstancePresentation(props.id)
+    const resolved = useResolved({
+      ...(props as unknown as Record<string, unknown>),
+      ...(pres?.overrides ?? {}),
+    })
+    if (pres && !pres.visible) return <></>
     const elevation = typeof resolved.elevation === 'number' ? resolved.elevation : 1
     const shadow = ['shadow-none', 'shadow-sm', 'shadow-md', 'shadow-lg'][elevation] ?? 'shadow-sm'
     return (
-      <Card className={`p-4 ${shadow}`}>
+      <Card className={`p-4 ${shadow}`} style={pres?.style} {...(pres?.a11y ?? {})}>
         {resolved.header ? (
-          <h3 className="text-base font-semibold text-neutral-900 mb-1">
+          <h3 className="text-base font-semibold text-card-foreground mb-1">
             {String(resolved.header)}
           </h3>
         ) : null}
         {resolved.content ? (
-          <p className="text-sm text-neutral-600">{String(resolved.content)}</p>
+          <p className="text-sm text-muted-foreground">{String(resolved.content)}</p>
         ) : null}
         {resolved.footer ? (
-          <div className="mt-3 pt-3 border-t text-xs text-neutral-500">
+          <div className="mt-3 pt-3 border-t border-border text-xs text-muted-foreground">
             {String(resolved.footer)}
           </div>
         ) : null}
@@ -246,7 +270,12 @@ const NavbarConfig: ComponentConfig = {
     transparent: false,
   },
   render: (props: NavbarRenderProps) => {
-    const resolved = useResolved(props as unknown as Record<string, unknown>)
+    const pres = useInstancePresentation(props.id)
+    const resolved = useResolved({
+      ...(props as unknown as Record<string, unknown>),
+      ...(pres?.overrides ?? {}),
+    })
+    if (pres && !pres.visible) return <></>
     const links = Array.isArray(resolved.links) ? resolved.links : []
     return (
       <Navbar
@@ -254,6 +283,8 @@ const NavbarConfig: ComponentConfig = {
         links={links.map((link) => ({ label: String(link?.label ?? ''), href: String(link?.href ?? '#') }))}
         sticky={Boolean(resolved.sticky)}
         transparent={Boolean(resolved.transparent)}
+        style={pres?.style}
+        {...(pres?.a11y ?? {})}
       />
     )
   },
@@ -267,12 +298,58 @@ interface ChartDataProp {
   datasets?: Array<{ label?: string; data: number[]; color?: string }>
 }
 
+/** One editable dataset row: series name + comma-separated values + color. */
+interface ChartDatasetRow {
+  label?: string
+  values?: string
+  color?: string
+}
+
 interface ChartRenderProps extends BaseRenderProps {
-  type?: 'line' | 'bar' | 'pie'
+  type?: ChartType
   data?: ChartDataProp | Record<string, unknown>
-  /** JSON string of ChartDataProp, editable from Puck's field panel. */
-  dataJson?: string
+  /** Puck-editable category labels (repeatable text rows). */
+  chartLabels?: string[]
+  /** Puck-editable dataset rows (repeatable: name / values / color). */
+  datasets?: ChartDatasetRow[]
   responsive?: boolean
+}
+
+const CHART_TYPES: ChartType[] = ['line', 'bar', 'pie', 'doughnut', 'area']
+
+/** Series-color order: the token roles most suited to categorical data first. */
+const CHART_COLOR_ROLES = [
+  'primary',
+  'success',
+  'warning',
+  'error',
+  'secondary',
+  'accent',
+  'info',
+] as const
+
+/**
+ * Derive an ordered chart palette from project design tokens. Returns the
+ * strings that are valid CSS colors; an empty result means "no token colors
+ * defined" and the Chart falls back to its built-in palette.
+ */
+export function deriveChartPalette(colors: unknown): string[] {
+  if (!colors || typeof colors !== 'object') return []
+  const record = colors as Record<string, unknown>
+  const picked: string[] = []
+  for (const role of CHART_COLOR_ROLES) {
+    const value = record[role]
+    if (typeof value === 'string' && value.trim() && isCssColor(value.trim())) {
+      picked.push(value.trim())
+    }
+  }
+  return picked
+}
+
+const CSS_COLOR_RE = /^(#[0-9a-fA-F]{3,8}|rgba?\([^)]*\)|hsla?\([^)]*\)|[a-zA-Z]+)$/
+
+function isCssColor(value: string): boolean {
+  return CSS_COLOR_RE.test(value)
 }
 
 const DEFAULT_CHART_DATA: ChartDataProp = {
@@ -283,6 +360,59 @@ const DEFAULT_CHART_DATA: ChartDataProp = {
   ],
 }
 
+/** Default dataset rows mirror DEFAULT_CHART_DATA for the Puck panel. */
+const DEFAULT_DATASET_ROWS: ChartDatasetRow[] = [
+  { label: 'Revenue', values: '12, 30, 18, 24' },
+  { label: 'Costs', values: '8, 14, 11, 9', color: '#10b981' },
+]
+
+/**
+ * Parse the comma-separated values field into numbers. Everything outside
+ * ranges is treated as a separator, so `"1, 2 ,3"`, `"1;2;3"` and `"1 2 3"
+ * all work; non-numeric fragments are dropped instead of breaking the chart.
+ */
+export function parseChartValues(input: unknown): number[] {
+  if (typeof input !== 'string') {
+    return Array.isArray(input)
+      ? input.filter((n): n is number => typeof n === 'number' && Number.isFinite(n))
+      : []
+  }
+  const matches = input.match(/-?\d+(?:\.\d+)?/g) ?? []
+  return matches.map(Number)
+}
+
+/**
+ * Resolve the chart's data from the structured Puck fields. Precedence:
+ * programmatic `data` prop > `datasets`/`chartLabels` rows > built-in
+ * defaults, so the panel always edits a live, chart-backed series list.
+ */
+export function resolveChartData(
+  resolved: Pick<ChartRenderProps, 'data' | 'chartLabels' | 'datasets'>
+): ChartDataProp | null {
+  if (resolved.data && typeof resolved.data === 'object') {
+    return resolved.data as ChartDataProp
+  }
+  if (Array.isArray(resolved.datasets)) {
+    const labels = Array.isArray(resolved.chartLabels)
+      ? resolved.chartLabels.filter((l): l is string => typeof l === 'string')
+      : []
+    const datasets = resolved.datasets
+      .filter((row): row is ChartDatasetRow => Boolean(row) && typeof row === 'object')
+      .map((row) => {
+        const dataset: { label?: string; data: number[]; color?: string } = {
+          data: parseChartValues(row.values),
+        }
+        if (typeof row.label === 'string' && row.label.trim()) dataset.label = row.label
+        if (typeof row.color === 'string' && isCssColor(row.color.trim())) {
+          dataset.color = row.color.trim()
+        }
+        return dataset
+      })
+    return { labels, datasets }
+  }
+  return DEFAULT_CHART_DATA
+}
+
 const ChartConfig: ComponentConfig = {
   fields: {
     type: {
@@ -291,37 +421,55 @@ const ChartConfig: ComponentConfig = {
         { label: 'Line', value: 'line' },
         { label: 'Bar', value: 'bar' },
         { label: 'Pie', value: 'pie' },
+        { label: 'Doughnut', value: 'doughnut' },
+        { label: 'Area', value: 'area' },
       ],
     },
-    // JSON edit field for { labels, datasets }; parsed and validated on render.
-    dataJson: { type: 'textarea', label: 'Data (JSON)' },
+    // Repeatable category labels + dataset rows (label / values / color).
+    chartLabels: {
+      type: 'array',
+      label: 'Categories',
+      arrayFields: { label: { type: 'text', label: 'Label' } },
+      getItemSummary: (item: unknown) =>
+        typeof item === 'string' ? item : (item as { label?: string })?.label ?? 'Label',
+    },
+    datasets: {
+      type: 'array',
+      label: 'Datasets',
+      arrayFields: {
+        label: { type: 'text', label: 'Name' },
+        values: { type: 'text', label: 'Values (comma-separated)' },
+        color: { type: 'text', label: 'Color' },
+        },
+      defaultItemProps: { label: 'Series', values: '1, 2, 3' },
+      getItemSummary: (item: ChartDatasetRow) => item?.label ?? 'Series',
+    },
     responsive: boolField('Responsive'),
   },
   defaultProps: {
     type: 'bar',
-    dataJson: JSON.stringify(DEFAULT_CHART_DATA, null, 2),
+    chartLabels: DEFAULT_CHART_DATA.labels,
+    datasets: DEFAULT_DATASET_ROWS,
     responsive: true,
   },
   render: (props: ChartRenderProps) => {
-    const resolved = useResolved(props as unknown as Record<string, unknown>)
-    // `data` prop wins when present (e.g. programmatic use); otherwise the
-    // Puck-editable dataJson field is parsed.
-    let data: ChartDataProp | null = null
-    if (resolved.data && typeof resolved.data === 'object') {
-      data = resolved.data as ChartDataProp
-    } else if (typeof resolved.dataJson === 'string' && resolved.dataJson.trim()) {
-      try {
-        const parsed = JSON.parse(resolved.dataJson)
-        if (parsed && typeof parsed === 'object') data = parsed as ChartDataProp
-      } catch {
-        // Invalid JSON — render the empty state below.
-      }
-    }
+    const pres = useInstancePresentation(props.id)
+    const resolved = useResolved({
+      ...(props as unknown as Record<string, unknown>),
+      ...(pres?.overrides ?? {}),
+    })
+    // Series colors follow the project theme; empty palette -> Chart's built-ins.
+    const palette = deriveChartPalette(useDesignTokens()?.colors)
+    if (pres && !pres.visible) return <></>
+    const data = resolveChartData(resolved)
     return (
       <Chart
-        type={resolved.type === 'line' || resolved.type === 'pie' ? resolved.type : 'bar'}
+        type={CHART_TYPES.includes(resolved.type as ChartType) ? (resolved.type as ChartType) : 'bar'}
         data={data}
+        palette={palette.length > 0 ? palette : undefined}
         responsive={resolved.responsive !== false}
+        style={pres?.style}
+        {...(pres?.a11y ?? {})}
       />
     )
   },
@@ -372,7 +520,12 @@ const TableConfig: ComponentConfig = {
     filterable: false,
   },
   render: (props: TableRenderProps) => {
-    const resolved = useResolved(props as unknown as Record<string, unknown>)
+    const pres = useInstancePresentation(props.id)
+    const resolved = useResolved({
+      ...(props as unknown as Record<string, unknown>),
+      ...(pres?.overrides ?? {}),
+    })
+    if (pres && !pres.visible) return <></>
     const columns = Array.isArray(resolved.columns) && resolved.columns.length
       ? resolved.columns
       : DEFAULT_TABLE_COLUMNS
@@ -386,6 +539,8 @@ const TableConfig: ComponentConfig = {
         data={data}
         sortable={Boolean(resolved.sortable)}
         filterable={Boolean(resolved.filterable)}
+        style={pres?.style}
+        {...(pres?.a11y ?? {})}
       />
     )
   },

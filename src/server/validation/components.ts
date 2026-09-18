@@ -32,7 +32,7 @@ export const NavbarPropsSchema = z.object({
 }).passthrough()
 
 export const ChartPropsSchema = z.object({
-  type: z.enum(['line', 'bar', 'pie']).optional(),
+  type: z.enum(['line', 'bar', 'pie', 'doughnut', 'area']).optional(),
   data: z.unknown().optional(),
   options: z.unknown().optional(),
   responsive: z.boolean().optional(),

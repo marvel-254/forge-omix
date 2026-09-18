@@ -40,8 +40,14 @@ export function LayersPanel() {
 
   if (components.length === 0) {
     return (
-      <div className="p-3 text-sm text-neutral-500">
-        No components yet. Add one from the library.
+      <div className="flex flex-col items-center px-4 py-10 text-center">
+        <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-lg bg-neutral-100 text-base text-neutral-400">
+          ▤
+        </div>
+        <p className="text-sm font-medium text-neutral-600">Page is empty</p>
+        <p className="mt-1 text-xs leading-relaxed text-neutral-400">
+          Add components from the library to start building.
+        </p>
       </div>
     )
   }

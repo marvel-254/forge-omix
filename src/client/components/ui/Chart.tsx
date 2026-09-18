@@ -11,7 +11,7 @@ import {
   Legend,
   Filler,
 } from 'chart.js';
-import { Line, Bar, Pie } from 'react-chartjs-2';
+import { Line, Bar, Pie, Doughnut } from 'react-chartjs-2';
 import { cn } from '../../lib/utils';
 
 ChartJS.register(
@@ -32,8 +32,17 @@ interface ChartDataset {
   color?: string;
 }
 
+export type ChartType = 'line' | 'bar' | 'pie' | 'doughnut' | 'area';
+
+/**
+ * Ordered series colors. When a chart is driven from the canvas registry the
+ * palette is derived from the project's design tokens (see deriveChartPalette);
+ * `undefined` falls back to the built-in defaults below.
+ */
+export type ChartPalette = Array<string> | undefined;
+
 interface ChartProps extends React.HTMLAttributes<HTMLDivElement> {
-  type: 'line' | 'bar' | 'pie';
+  type: ChartType;
   /** { labels: string[], datasets: [{ label, data, color? }] } */
   data: {
     labels?: Array<string>;
@@ -41,6 +50,8 @@ interface ChartProps extends React.HTMLAttributes<HTMLDivElement> {
   } | null;
   options?: Record<string, unknown>;
   responsive?: boolean;
+  /** Token-derived series colors; positional (series i uses palette[i]). */
+  palette?: ChartPalette;
 }
 
 const PALETTE = [
@@ -53,21 +64,23 @@ const PALETTE = [
 ];
 
 function toChartJsData(
-  type: 'line' | 'bar' | 'pie',
-  data: ChartProps['data']
+  type: ChartType,
+  data: ChartProps['data'],
+  palette: ChartPalette = undefined
 ) {
+  const seriesColors = palette && palette.length > 0 ? palette : PALETTE
   const labels = data?.labels ?? []
   const datasets = data?.datasets ?? []
 
-  if (type === 'pie') {
-    // Pie takes a single dataset; its colors are per-slice.
+  if (type === 'pie' || type === 'doughnut') {
+    // Pie/doughnut take a single dataset; its colors are per-slice.
     const values = datasets[0]?.data ?? []
     return {
       labels,
       datasets: [
         {
           data: values,
-          backgroundColor: values.map((_, i) => PALETTE[i % PALETTE.length]),
+          backgroundColor: values.map((_, i) => seriesColors[i % seriesColors.length]),
           borderWidth: 0,
         },
       ],
@@ -77,8 +90,9 @@ function toChartJsData(
   return {
     labels,
     datasets: datasets.map((ds, i) => {
-      const color = ds.color ?? PALETTE[i % PALETTE.length]
-      if (type === 'line') {
+      const color = ds.color ?? seriesColors[i % seriesColors.length]
+      // `area` is a line chart with the (already configured) alpha fill.
+      if (type === 'line' || type === 'area') {
         return {
           label: ds.label,
           data: ds.data,
@@ -113,8 +127,8 @@ const baseOptions = {
 } as const;
 
 const Chart = React.forwardRef<HTMLDivElement, ChartProps>(
-  ({ className, type, data, options, responsive = true, ...props }, ref) => {
-    const chartData = useMemo(() => toChartJsData(type, data), [type, data])
+  ({ className, type, data, options, responsive = true, palette, ...props }, ref) => {
+    const chartData = useMemo(() => toChartJsData(type, data, palette), [type, data, palette])
     const hasData = (data?.datasets?.length ?? 0) > 0
 
     const mergedOptions = useMemo(
@@ -136,10 +150,12 @@ const Chart = React.forwardRef<HTMLDivElement, ChartProps>(
         {...props}
       >
         {hasData ? (
-          type === 'line' ? (
+          type === 'line' || type === 'area' ? (
             <Line data={chartData} options={mergedOptions} />
           ) : type === 'bar' ? (
             <Bar data={chartData} options={mergedOptions} />
+          ) : type === 'doughnut' ? (
+            <Doughnut data={chartData} options={mergedOptions} />
           ) : (
             <Pie data={chartData} options={mergedOptions} />
           )

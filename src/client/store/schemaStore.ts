@@ -376,6 +376,9 @@ export const useSchemaStore = create<SchemaState>()(
               next.delete(componentId)
               return { selectedIds: next }
             })
+            // Remount Puck: its mounted copy still contains the deleted
+            // component and would resurrect it on the next Puck-side edit.
+            set({ canvasRevision: get().canvasRevision + 1 })
           }
           return result
         },
