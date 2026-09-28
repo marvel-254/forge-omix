@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { parseChartValues, resolveChartData } from '@client/canvas/registry'
+import {
+  parseChartValues,
+  resolveChartData,
+  getChartLengthWarnings,
+} from '@client/canvas/registry'
 
 /**
  * Unit tests for the structured chart-data resolution that backs the
@@ -81,5 +85,61 @@ describe('resolveChartData', () => {
   it('falls back to defaults when datasets is not an array', () => {
     const resolved = resolveChartData({ datasets: 'nope' as never })
     expect(resolved?.labels).toEqual(['Q1', 'Q2', 'Q3', 'Q4'])
+  })
+})
+
+describe('getChartLengthWarnings', () => {
+  it('returns [] for null/empty data', () => {
+    expect(getChartLengthWarnings(null)).toEqual([])
+    expect(getChartLengthWarnings({ labels: [], datasets: [] })).toEqual([])
+  })
+
+  it('returns [] when there are no labels to compare against', () => {
+    expect(getChartLengthWarnings({ datasets: [{ data: [1, 2] }] })).toEqual([])
+  })
+
+  it('returns [] when every dataset matches the label count', () => {
+    expect(
+      getChartLengthWarnings({
+        labels: ['A', 'B', 'C'],
+        datasets: [{ label: 'S', data: [1, 2, 3] }],
+      })
+    ).toEqual([])
+  })
+
+  it('flags a mismatch with the series name and both counts', () => {
+    expect(
+      getChartLengthWarnings({
+        labels: ['A', 'B', 'C'],
+        datasets: [{ label: 'Revenue', data: [1, 2] }],
+      })
+    ).toEqual([{ series: 'Revenue', values: 2, labels: 3 }])
+  })
+
+  it('names unnamed datasets by 1-based position', () => {
+    const warnings = getChartLengthWarnings({
+      labels: ['A', 'B'],
+      datasets: [{ data: [1] }, { label: '  ', data: [1, 2, 3] }],
+    })
+    expect(warnings).toEqual([
+      { series: 'Dataset 1', values: 1, labels: 2 },
+      { series: 'Dataset 2', values: 3, labels: 2 },
+    ])
+  })
+
+  it('flags empty value rows against labels', () => {
+    const warnings = getChartLengthWarnings({
+      labels: ['A', 'B'],
+      datasets: [{ label: 'Empty', data: [] }],
+    })
+    expect(warnings).toEqual([{ series: 'Empty', values: 0, labels: 2 }])
+  })
+
+  it('only warns for the mismatched series, not matching ones', () => {
+    const warnings = getChartLengthWarnings({
+      labels: ['A', 'B'],
+      datasets: [{ label: 'Good', data: [1, 2] }, { label: 'Bad', data: [1] }],
+    })
+    expect(warnings).toEqual([{ series: 'Bad', values: 1, labels: 2 }])
   })
 })

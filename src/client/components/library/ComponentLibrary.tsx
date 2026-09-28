@@ -61,6 +61,7 @@ function LibraryCard({
   >;
   return (
     <Card
+      data-testid={`library-card-${meta.type}`}
       className={`cursor-grab overflow-hidden p-2 transition-shadow hover:shadow-md active:cursor-grabbing ${
         isDragging ? 'opacity-50 ring-2 ring-primary-400' : ''
       }`}

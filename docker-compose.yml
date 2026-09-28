@@ -9,6 +9,14 @@ services:
       - forge-data:/data
     environment:
       - PORT=3001
+      - NODE_ENV=production
+      # Keep SQLite + git workspaces on the persistent volume (defaults
+      # would land in the ephemeral container filesystem).
+      - DATABASE_URL=file:/data/forge.db
+      - GIT_WORKSPACES=/data/workspaces
+      - AI_MODE=${AI_MODE:-local}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://localhost:11434}
     restart: unless-stopped
 
 volumes:

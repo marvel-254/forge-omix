@@ -5,6 +5,10 @@ on:
     branches: [master, main]
   pull_request:
     branches: [master, main]
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 
 jobs:
   test:
@@ -23,7 +27,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: '9'
+          version: '10'
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -39,3 +43,12 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+      - name: Build server
+        run: pnpm build:server
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: E2E tests
+        run: pnpm test:e2e

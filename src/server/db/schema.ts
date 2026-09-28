@@ -1,7 +1,46 @@
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
 
+export const accounts = sqliteTable('accounts', {
+  id: text('id').primaryKey(),
+  email: text('email').notNull().unique(),
+  displayName: text('display_name'),
+  passwordHash: text('password_hash').notNull(),
+  role: text('role').notNull().default('user'),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+})
+
+export const sessions = sqliteTable('sessions', {
+  id: text('id').primaryKey(),
+  accountId: text('account_id').notNull().references(() => accounts.id),
+  tokenHash: text('token_hash').notNull().unique(),
+  expiresAt: integer('expires_at', { mode: 'timestamp_ms' }).notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+  lastUsedAt: integer('last_used_at', { mode: 'timestamp_ms' }).notNull(),
+})
+
+export type AuthAccount = typeof accounts.$inferSelect
+
+export const aiCreationSessions = sqliteTable('ai_creation_sessions', {
+  id: text('id').primaryKey(),
+  accountId: text('account_id').notNull().references(() => accounts.id),
+  status: text('status').notNull().default('draft'),
+  step: text('step').notNull().default('brief'),
+  brief: text('brief').notNull(),
+  projectName: text('project_name').notNull(),
+  clarifications: text('clarifications', { mode: 'json' }).notNull(),
+  assets: text('assets', { mode: 'json' }).notNull(),
+  generatedProject: text('generated_project', { mode: 'json' }),
+  error: text('error'),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+})
+
+export type AiCreationSessionRow = typeof aiCreationSessions.$inferSelect
+
 export const projects = sqliteTable('projects', {
   id: text('id').primaryKey(),
+  accountId: text('account_id').references(() => accounts.id),
   name: text('name').notNull(),
   description: text('description'),
   version: text('version').notNull(),
@@ -12,6 +51,72 @@ export const projects = sqliteTable('projects', {
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
 })
+
+export const deployments = sqliteTable('deployments', {
+  id: text('id').primaryKey(),
+  accountId: text('account_id').notNull().references(() => accounts.id),
+  projectId: text('project_id').notNull().references(() => projects.id),
+  environment: text('environment').notNull(),
+  version: text('version'),
+  status: text('status').notNull().default('queued'),
+  failure: text('failure'),
+  previewUrl: text('preview_url'),
+  liveUrl: text('live_url'),
+  commitHash: text('commit_hash'),
+  commitMessage: text('commit_message'),
+  commitAuthor: text('commit_author'),
+  metadata: text('metadata', { mode: 'json' }),
+  startedAt: integer('started_at', { mode: 'timestamp' }),
+  completedAt: integer('completed_at', { mode: 'timestamp' }),
+  publishedAt: integer('published_at', { mode: 'timestamp' }),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+})
+
+export type DeploymentRow = typeof deployments.$inferSelect
+
+export const deploymentLogs = sqliteTable('deployment_logs', {
+  id: text('id').primaryKey(),
+  deploymentId: text('deployment_id').notNull().references(() => deployments.id),
+  accountId: text('account_id').notNull().references(() => accounts.id),
+  event: text('event').notNull(),
+  message: text('message').notNull(),
+  metadata: text('metadata', { mode: 'json' }),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+})
+
+export type DeploymentLogRow = typeof deploymentLogs.$inferSelect
+
+export const checkoutSessions = sqliteTable('checkout_sessions', {
+  id: text('id').primaryKey(),
+  accountId: text('account_id').notNull().references(() => accounts.id),
+  projectId: text('project_id').notNull().references(() => projects.id),
+  planId: text('plan_id').notNull(),
+  planSnapshot: text('plan_snapshot', { mode: 'json' }).notNull(),
+  termMonths: integer('term_months').notNull(),
+  status: text('status').notNull().default('draft'),
+  promotionalTotal: integer('promotional_total').notNull(),
+  renewalTotal: integer('renewal_total').notNull(),
+  currency: text('currency').notNull(),
+  paymentReference: text('payment_reference'),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+})
+
+export type CheckoutSessionRow = typeof checkoutSessions.$inferSelect
+
+export const domains = sqliteTable('domains', {
+  id: text('id').primaryKey(),
+  accountId: text('account_id').notNull().references(() => accounts.id),
+  name: text('name').notNull(),
+  status: text('status').notNull().default('available'),
+  registration: text('registration', { mode: 'json' }).notNull(),
+  hostingConnection: text('hosting_connection', { mode: 'json' }),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+})
+
+export type DomainRow = typeof domains.$inferSelect
 
 export const pages = sqliteTable('pages', {
   id: text('id').primaryKey(),
@@ -101,6 +206,16 @@ export const templates = sqliteTable('templates', {
   importMetadata: text('import_metadata', { mode: 'json' }),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+})
+
+export const feedback = sqliteTable('feedback', {
+  id: text('id').primaryKey(),
+  kind: text('kind').notNull(),
+  message: text('message').notNull(),
+  contact: text('contact'),
+  appVersion: text('app_version'),
+  accountId: text('account_id').references(() => accounts.id),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
 })
 
 export const schemaVersions = sqliteTable('schema_versions', {

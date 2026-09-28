@@ -130,6 +130,12 @@ export class SchemaVersionManager {
   static async runPendingMigrations(migrationsFolder: string): Promise<number> {
     await this.ensureRecordTable()
     const migrations = await this.listMigrations(migrationsFolder)
+    if (migrations.length === 0) {
+      // Fail loud: an empty folder usually means a bad path (e.g. missing
+      // files next to a bundled server), and silent success leaves a
+      // table-less database behind.
+      console.warn(`No migrations found in ${migrationsFolder}`)
+    }
     const current = await this.getVersion()
     // Compare numerically: file names sort as strings ("10_" < "9_" lexically)
     const toApply = migrations.filter(

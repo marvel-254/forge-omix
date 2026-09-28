@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/libsql'
 import { createClient } from '@libsql/client'
-import { join } from 'path'
+import { join, resolve } from 'path'
 import { fileURLToPath } from 'url'
 import { SchemaVersionManager } from '../services/versionService'
 
@@ -10,7 +10,20 @@ const client = createClient({
 
 export const db = drizzle(client)
 
-const migrationsFolder = join(fileURLToPath(new URL('.', import.meta.url)), 'migrations')
+/**
+ * Migrations live next to this module at runtime (including inside the
+ * production bundle). Under test runners where import.meta.url is not a
+ * file: URL, fall back to the repo-relative path.
+ */
+function defaultMigrationsFolder(): string {
+  try {
+    return join(fileURLToPath(new URL('.', import.meta.url)), 'migrations')
+  } catch {
+    return resolve('src/server/db/migrations')
+  }
+}
+
+const migrationsFolder = defaultMigrationsFolder()
 
 export async function runMigrations() {
   try {

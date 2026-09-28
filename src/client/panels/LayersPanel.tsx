@@ -84,6 +84,7 @@ export function LayersPanel() {
           >
             <button
               type="button"
+              data-testid={`layer-item-${component.id}`}
               onClick={() => selectComponent(component.id)}
               aria-pressed={isSelected}
               className={`flex-1 text-left px-2 py-1.5 rounded transition-colors cursor-grab active:cursor-grabbing ${
@@ -97,7 +98,7 @@ export function LayersPanel() {
               </span>
               {component.name || component.type}
             </button>
-            <span className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <span className="flex items-center opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
               <Button
                 variant="ghost"
                 size="sm"

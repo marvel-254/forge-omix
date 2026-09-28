@@ -6,7 +6,7 @@ import {
   designTokens,
   flows,
 } from '../db/schema'
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import type { DesignTokens } from '../../types'
 
 /**
@@ -163,9 +163,23 @@ export async function writeProjectChildren(
   }
 }
 
+export async function getOwnedProject(projectId: string, accountId: string) {
+  return db
+    .select()
+    .from(projects)
+    .where(and(eq(projects.id, projectId), eq(projects.accountId, accountId)))
+    .get()
+}
+
+export async function projectBelongsToAccount(projectId: string, accountId: string) {
+  return Boolean(await getOwnedProject(projectId, accountId))
+}
+
 /** Reassemble the canonical project from its rows. Returns null if absent. */
-export async function reassembleProject(projectId: string) {
-  const project = await db.select().from(projects).where(eq(projects.id, projectId)).get()
+export async function reassembleProject(projectId: string, accountId?: string) {
+  const project = accountId
+    ? await getOwnedProject(projectId, accountId)
+    : await db.select().from(projects).where(eq(projects.id, projectId)).get()
   if (!project) return null
 
   const [pageRows, componentRows, flowRows, tokenRows] = await Promise.all([

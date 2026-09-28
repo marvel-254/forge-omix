@@ -31,6 +31,19 @@ interface FieldDef {
   min?: number
   max?: number
   step?: number
+  /** Puck custom-field renderer: receives { value, onChange, Label, label }. */
+  render?: (args: {
+    value: unknown
+    onChange: (v: unknown) => void
+    Label?: React.ComponentType<{ label?: React.ReactNode; children?: React.ReactNode }>
+    label?: string
+  }) => React.ReactNode
+  /** Array field shape: repeatable item fields. */
+  arrayFields?: Record<string, FieldDef>
+  /** Default props for newly added array items. */
+  defaultItemProps?: Record<string, unknown>
+  /** Short label for an array item's collapsed summary row. */
+  getItemSummary?: (item: unknown) => string
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -38,6 +51,156 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     <div className="space-y-2">
       <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">{title}</h4>
       {children}
+    </div>
+  )
+}
+
+/** Shared control factory so scalar and array-item fields never diverge. */
+function FieldControl({
+  def,
+  value,
+  onChange,
+}: {
+  def: FieldDef
+  value: unknown
+  onChange: (v: unknown) => void
+}) {
+  const label = def.label ?? ''
+  if (def.type === 'custom' && def.render) {
+    return <>{def.render({ value, onChange })}</>
+  }
+  if (def.type === 'select' && def.options) {
+    const match = def.options.find((o) => String(o.value) === String(value ?? ''))
+    return (
+      <div className="space-y-1">
+        <label className="block text-xs font-medium text-neutral-600">{label}</label>
+        <select
+          value={match ? String(match.value) : ''}
+          onChange={(e) => {
+            const opt = def.options?.find((o) => String(o.value) === e.target.value)
+            if (opt) onChange(opt.value)
+          }}
+          className="w-full rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          {def.options.map((o) => (
+            <option key={String(o.value)} value={String(o.value)}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      </div>
+    )
+  }
+  if (def.type === 'number') {
+    return (
+      <Input
+        label={label}
+        type="number"
+        min={def.min}
+        max={def.max}
+        step={def.step}
+        value={typeof value === 'number' ? value : ''}
+        onChange={(e) => {
+          const n = Number(e.target.value)
+          if (Number.isFinite(n)) onChange(n)
+        }}
+      />
+    )
+  }
+  if (def.type === 'textarea') {
+    return (
+      <div className="space-y-1">
+        <label className="block text-xs font-medium text-neutral-600">{label}</label>
+        <textarea
+          value={typeof value === 'string' ? value : ''}
+          rows={3}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        />
+      </div>
+    )
+  }
+  if (def.type === 'text' || def.type === undefined) {
+    return (
+      <Input
+        label={label}
+        value={typeof value === 'string' ? value : ''}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    )
+  }
+  return null
+}
+
+/** Repeatable row editor for array fields (links, categories, datasets…). */
+function ArrayFieldEditor({
+  label,
+  def,
+  value,
+  onChange,
+}: {
+  label: string
+  def: FieldDef
+  value: unknown
+  onChange: (v: unknown) => void
+}) {
+  const rows = Array.isArray(value) ? value : []
+  const itemFields = def.arrayFields ?? {}
+  const itemFieldEntries = Object.entries(itemFields)
+
+  const setRow = (index: number, key: string, v: unknown) => {
+    const next = rows.map((row, i) => {
+      if (i !== index) return row
+      return typeof row === 'object' && row !== null
+        ? { ...(row as Record<string, unknown>), [key]: v }
+        : v
+    })
+    onChange(next)
+  }
+
+  return (
+    <div className="space-y-1.5">
+      <label className="block text-xs font-medium text-neutral-600">{label}</label>
+      {rows.map((row, index) => (
+        <div key={index} className="rounded-md border border-neutral-200 p-2">
+          <div className="mb-1 flex items-center justify-between">
+            <span className="text-xs font-medium text-neutral-500">
+              {def.getItemSummary?.(row) ?? `Item ${index + 1}`}
+            </span>
+            <button
+              type="button"
+              aria-label={`Remove row ${index + 1}`}
+              onClick={() => onChange(rows.filter((_, i) => i !== index))}
+              className="rounded px-1 text-xs text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="space-y-1.5">
+            {itemFieldEntries.map(([key, fieldDef]) => (
+              <FieldControl
+                key={key}
+                def={fieldDef}
+                value={
+                  typeof row === 'object' && row !== null
+                    ? (row as Record<string, unknown>)[key]
+                    : itemFieldEntries.length === 1
+                      ? row
+                      : undefined
+                }
+                onChange={(v) => setRow(index, key, v)}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => onChange([...rows, { ...(def.defaultItemProps ?? {}) }])}
+      >
+        + Add {label ? label.toLowerCase() : 'item'}
+      </Button>
     </div>
   )
 }
@@ -339,6 +502,31 @@ export function PropertiesPanel() {
                 value={typeof current === 'string' ? current : ''}
                 onChange={(e) => setProps({ [fieldName]: e.target.value })}
               />
+            )
+          }
+          if (def.type === 'array' && def.arrayFields) {
+            return (
+              <ArrayFieldEditor
+                key={`${component.id}:${fieldName}`}
+                label={label}
+                def={def}
+                value={current}
+                onChange={(v) => setProps({ [fieldName]: v })}
+              />
+            )
+          }
+          if (def.type === 'custom' && def.render) {
+            return (
+              <div key={`${component.id}:${fieldName}`}>
+                {def.render({
+                  value: current,
+                  onChange: (v) => setProps({ [fieldName]: v }),
+                  Label: ({ label: labelText }: { label?: React.ReactNode }) => (
+                    <label className="block text-xs font-medium text-neutral-600">{labelText}</label>
+                  ),
+                  label,
+                })}
+              </div>
             )
           }
           return (

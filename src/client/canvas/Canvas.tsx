@@ -9,7 +9,6 @@ import {
   resolveActivePage,
 } from './puckBridge'
 import { canvasRegistry, defaultPropsFor } from './registry'
-import { buildTokenCssVars } from './themeVars'
 import type { CanvasViewport } from './useCanvas'
 import { Button } from '../components/ui/Button'
 
@@ -55,46 +54,6 @@ export function Canvas({ viewport = 'desktop', onViewportChange }: CanvasProps) 
 
   const data = useMemo(() => pageToPuckData(project, activePageId), [project, activePageId])
   const page = resolveActivePage(project, activePageId)
-
-  // Theme the canvas from project design tokens: overrides for the shadcn
-  // CSS variables on the drop-zone wrapper, injected into Puck's iframe so
-  // rendered components inside it retheme too.
-  const tokenVars = useMemo(() => buildTokenCssVars(project?.designTokens), [project?.designTokens])
-  const tokenStyle = useMemo(
-    () => Object.fromEntries(Object.entries(tokenVars).map(([k, v]) => [k, v])) as React.CSSProperties,
-    [tokenVars]
-  )
-  const tokenCssText = useMemo(
-    () =>
-      Object.entries(tokenVars)
-        .map(([k, v]) => `${k}:${v}`)
-        .join(';'),
-    [tokenVars]
-  )
-  useEffect(() => {
-    // Puck creates its iframe asynchronously after mount, so retry briefly.
-    let attempts = 0
-    let timer: ReturnType<typeof setTimeout> | undefined
-    const inject = () => {
-      const iframe = fitFrameRef.current?.querySelector('iframe')
-      const doc = iframe?.contentDocument
-      if (!doc || !doc.head) {
-        if (attempts++ < 40) timer = setTimeout(inject, 50)
-        return
-      }
-      let style = doc.getElementById('omix-token-theme')
-      if (!style) {
-        style = doc.createElement('style')
-        style.id = 'omix-token-theme'
-        doc.head.appendChild(style)
-      }
-      style.textContent = tokenCssText ? `:root{${tokenCssText}}` : ''
-    }
-    inject()
-    return () => {
-      if (timer) clearTimeout(timer)
-    }
-  }, [tokenCssText, canvasRevision, page.id])
 
   // NOTE: Puck subscribes to onChange once at mount and keeps calling that
   // first closure forever, so this handler must NOT close over `project` /
@@ -227,7 +186,7 @@ export function Canvas({ viewport = 'desktop', onViewportChange }: CanvasProps) 
   }
 
   return (
-    <div className="flex-1 flex flex-col min-h-0">
+    <main className="flex-1 flex flex-col min-h-0" aria-label="Canvas">
       <div className="flex items-center gap-2 px-3 py-2 border-b bg-white">
         <span className="text-xs font-medium text-neutral-500 mr-2">Viewport</span>
         {(Object.keys(VIEWPORT_WIDTHS) as CanvasViewport[]).map((vp) => (
@@ -256,7 +215,6 @@ export function Canvas({ viewport = 'desktop', onViewportChange }: CanvasProps) 
       </div>
       <div
         ref={fitFrameRef}
-        style={tokenStyle}
         className={`relative flex-1 min-h-0 ${
           isDropTarget ? 'ring-2 ring-inset ring-primary-400' : ''
         }`}
@@ -295,7 +253,7 @@ export function Canvas({ viewport = 'desktop', onViewportChange }: CanvasProps) 
           </div>
         )}
       </div>
-    </div>
+    </main>
   )
 }
 

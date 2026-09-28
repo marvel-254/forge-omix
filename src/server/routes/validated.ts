@@ -2,7 +2,11 @@ import { z } from 'zod'
 import type { Hono, Context } from 'hono'
 import { db } from '../db'
 import { projects, pages, components, designTokens, flows, tasks, templates } from '../db/schema'
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
+import { authMiddleware, type AuthEnv } from '../middleware/authMiddleware'
+import type { AuthAccount } from '../db/schema'
+
+type ValidatedEnv = AuthEnv & { Variables: { validated?: unknown; account?: AuthAccount } }
 import {
   ProjectSchema,
   PageSchema,
@@ -14,7 +18,7 @@ import {
 } from '../validation'
 
 function withValidation(schema: z.ZodType<any>) {
-  return async (c: Context, next: () => Promise<void>) => {
+  return async (c: Context<ValidatedEnv>, next: () => Promise<void>) => {
     let body: unknown
     try {
       body = await c.req.json()
@@ -33,15 +37,39 @@ function withValidation(schema: z.ZodType<any>) {
   }
 }
 
-export function setupValidatedRoutes(app: Hono<{ Variables: { validated?: unknown } }>) {
+function accountId(c: Context<ValidatedEnv>) {
+  const account = c.get('account' as never) as { id: string } | undefined
+  if (!account) throw new Error('Authenticated account missing')
+  return account.id
+}
+
+async function hasProjectAccess(c: Context, projectId: string) {
+  const project = await db
+    .select({ id: projects.id })
+    .from(projects)
+    .where(and(eq(projects.id, projectId), eq(projects.accountId, accountId(c))))
+    .get()
+  return Boolean(project)
+}
+
+export function setupValidatedRoutes(app: Hono<any>) {
+  app.use('/api/projects', authMiddleware())
+  app.use('/api/projects/*', authMiddleware())
+  app.use('/api/templates', authMiddleware())
+  app.use('/api/templates/*', authMiddleware())
+
   app.get('/api/projects', async (c) => {
-    const all = await db.select().from(projects)
+    const all = await db.select().from(projects).where(eq(projects.accountId, accountId(c)))
     return c.json({ data: all, count: all.length })
   })
 
   app.get('/api/projects/:id', async (c) => {
     const id = c.req.param('id') as string
-    const project = await db.select().from(projects).where(eq(projects.id, id)).limit(1)
+    const project = await db
+      .select()
+      .from(projects)
+      .where(and(eq(projects.id, id), eq(projects.accountId, accountId(c))))
+      .limit(1)
     if (!project[0]) return c.json({ error: 'Not found' }, 404)
 
     const pg = await db.select().from(pages).where(eq(pages.projectId, id))
@@ -88,6 +116,7 @@ export function setupValidatedRoutes(app: Hono<{ Variables: { validated?: unknow
     const nowTs = new Date()
     await db.insert(projects).values({
       id: validated.id,
+      accountId: accountId(c),
       name: validated.name,
       description: validated.description ?? null,
       version: validated.version,
@@ -103,7 +132,11 @@ export function setupValidatedRoutes(app: Hono<{ Variables: { validated?: unknow
   app.put('/api/projects/:id', withValidation(ProjectSchema), async (c) => {
     const id = c.req.param('id') as string
     const validated = c.get('validated') as z.infer<typeof ProjectSchema>
-    const existing = await db.select().from(projects).where(eq(projects.id, id)).limit(1)
+    const existing = await db
+      .select()
+      .from(projects)
+      .where(and(eq(projects.id, id), eq(projects.accountId, accountId(c))))
+      .limit(1)
     if (!existing.length) return c.json({ error: 'Not found' }, 404)
 
     await db.update(projects).set({
@@ -111,27 +144,33 @@ export function setupValidatedRoutes(app: Hono<{ Variables: { validated?: unknow
       description: validated.description ?? null,
       version: validated.version,
       updatedAt: new Date(),
-    }).where(eq(projects.id, id))
+    }).where(and(eq(projects.id, id), eq(projects.accountId, accountId(c))))
     return c.json({ data: { id, updated: true } })
   })
 
   app.delete('/api/projects/:id', async (c) => {
     const id = c.req.param('id') as string
-    const existing = await db.select().from(projects).where(eq(projects.id, id)).limit(1)
+    const existing = await db
+      .select()
+      .from(projects)
+      .where(and(eq(projects.id, id), eq(projects.accountId, accountId(c))))
+      .limit(1)
     if (!existing.length) return c.json({ error: 'Not found' }, 404)
 
-    await db.delete(projects).where(eq(projects.id, id))
+    await db.delete(projects).where(and(eq(projects.id, id), eq(projects.accountId, accountId(c))))
     return c.json({ data: { id, deleted: true } })
   })
 
   app.get('/api/projects/:projectId/pages', async (c) => {
     const projectId = c.req.param('projectId') as string
+    if (!(await hasProjectAccess(c, projectId))) return c.json({ error: 'Not found' }, 404)
     const all = await db.select().from(pages).where(eq(pages.projectId, projectId))
     return c.json({ data: all.map((p) => p.schema), count: all.length })
   })
 
   app.post('/api/projects/:projectId/pages', withValidation(PageSchema), async (c) => {
     const projectId = c.req.param('projectId') as string
+    if (!(await hasProjectAccess(c, projectId))) return c.json({ error: 'Not found' }, 404)
     const validated = c.get('validated') as z.infer<typeof PageSchema>
     const existing = await db.select().from(pages).where(eq(pages.id, validated.id)).limit(1)
     if (existing.length) return c.json({ error: 'ID exists' }, 400)
@@ -152,12 +191,14 @@ export function setupValidatedRoutes(app: Hono<{ Variables: { validated?: unknow
 
   app.get('/api/projects/:projectId/components', async (c) => {
     const projectId = c.req.param('projectId') as string
+    if (!(await hasProjectAccess(c, projectId))) return c.json({ error: 'Not found' }, 404)
     const all = await db.select().from(components).where(eq(components.projectId, projectId))
     return c.json({ data: all.map((co) => co.schema), count: all.length })
   })
 
   app.post('/api/projects/:projectId/components', withValidation(ComponentSchema), async (c) => {
     const projectId = c.req.param('projectId') as string
+    if (!(await hasProjectAccess(c, projectId))) return c.json({ error: 'Not found' }, 404)
     const validated = c.get('validated') as z.infer<typeof ComponentSchema>
     const existing = await db.select().from(components).where(eq(components.id, validated.id)).limit(1)
     if (existing.length) return c.json({ error: 'ID exists' }, 400)
@@ -177,12 +218,14 @@ export function setupValidatedRoutes(app: Hono<{ Variables: { validated?: unknow
 
   app.get('/api/projects/:projectId/flows', async (c) => {
     const projectId = c.req.param('projectId') as string
+    if (!(await hasProjectAccess(c, projectId))) return c.json({ error: 'Not found' }, 404)
     const all = await db.select().from(flows).where(eq(flows.projectId, projectId))
     return c.json({ data: all, count: all.length })
   })
 
   app.post('/api/projects/:projectId/flows', withValidation(FlowSchema), async (c) => {
     const projectId = c.req.param('projectId') as string
+    if (!(await hasProjectAccess(c, projectId))) return c.json({ error: 'Not found' }, 404)
     const validated = c.get('validated') as z.infer<typeof FlowSchema>
     const existing = await db.select().from(flows).where(eq(flows.id, validated.id)).limit(1)
     if (existing.length) return c.json({ error: 'ID exists' }, 400)
@@ -205,6 +248,7 @@ export function setupValidatedRoutes(app: Hono<{ Variables: { validated?: unknow
 
   app.get('/api/projects/:projectId/tasks', async (c) => {
     const projectId = c.req.param('projectId') as string
+    if (!(await hasProjectAccess(c, projectId))) return c.json({ error: 'Not found' }, 404)
     const all = await db.select().from(tasks).where(eq(tasks.projectId, projectId))
     return c.json({
       data: all.map((t) => ({
@@ -234,6 +278,7 @@ export function setupValidatedRoutes(app: Hono<{ Variables: { validated?: unknow
 
   app.post('/api/projects/:projectId/tasks', withValidation(TaskSchema), async (c) => {
     const projectId = c.req.param('projectId') as string
+    if (!(await hasProjectAccess(c, projectId))) return c.json({ error: 'Not found' }, 404)
     const validated = c.get('validated') as z.infer<typeof TaskSchema>
     const existing = await db.select().from(tasks).where(eq(tasks.id, validated.id)).limit(1)
     if (existing.length) return c.json({ error: 'ID exists' }, 400)
@@ -265,6 +310,7 @@ export function setupValidatedRoutes(app: Hono<{ Variables: { validated?: unknow
 
   app.get('/api/projects/:projectId/templates', async (c) => {
     const projectId = c.req.param('projectId') as string
+    if (!(await hasProjectAccess(c, projectId))) return c.json({ error: 'Not found' }, 404)
     const all = await db.select().from(templates).where(eq(templates.projectId, projectId))
     return c.json({ data: all, count: all.length })
   })
@@ -297,12 +343,14 @@ export function setupValidatedRoutes(app: Hono<{ Variables: { validated?: unknow
 
   app.get('/api/projects/:projectId/design-tokens', async (c) => {
     const projectId = c.req.param('projectId') as string
+    if (!(await hasProjectAccess(c, projectId))) return c.json({ error: 'Not found' }, 404)
     const all = await db.select().from(designTokens).where(eq(designTokens.projectId, projectId))
     return c.json({ data: all, count: all.length })
   })
 
   app.put('/api/projects/:projectId/design-tokens', withValidation(DesignTokensSchema), async (c) => {
     const projectId = c.req.param('projectId') as string
+    if (!(await hasProjectAccess(c, projectId))) return c.json({ error: 'Not found' }, 404)
     const validated = c.get('validated') as z.infer<typeof DesignTokensSchema>
     const nowTs = new Date()
 

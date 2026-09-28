@@ -1,84 +1,110 @@
-import { Hono } from 'hono';
-import { sign } from 'hono/jwt';
-import { createApiResponse, createErrorResponse } from '../utils';
-import { z } from 'zod';
-import { createValidationMiddleware } from '../middleware/validation';
+import { Hono } from 'hono'
+import { deleteCookie, setCookie } from 'hono/cookie'
+import { z } from 'zod'
+import { createApiResponse, createErrorResponse } from '../utils'
+import { createValidationMiddleware } from '../middleware/validation'
+import { authMiddleware, getSessionToken, type AuthEnv } from '../middleware/authMiddleware'
+import {
+  createSession,
+  hashPassword,
+  revokeSession,
+  SESSION_COOKIE,
+  SESSION_TTL_SECONDS,
+  verifyPassword,
+} from '../services/authService'
+import { accounts, type AuthAccount } from '../db/schema'
+import { db } from '../db'
+import { eq } from 'drizzle-orm'
 
-interface MockUser {
-  id: string;
-  email: string;
-  password: string;
-  role: string;
-}
+const router = new Hono<AuthEnv>()
 
-// Mock user database - in a real app, this would be a database query
-const users: MockUser[] = [
-  {
-    id: 'user1',
-    email: 'user@example.com',
-    password: 'hashed_password', // In real app, this would be a hashed password
-    role: 'user',
-  },
-  {
-    id: 'admin1',
-    email: 'admin@example.com',
-    password: 'hashed_password',
-    role: 'admin',
-  },
-];
+const registrationSchema = z.object({
+  email: z.string().email().max(320),
+  password: z.string().min(8).max(256),
+  displayName: z.string().trim().min(1).max(100).optional(),
+})
 
-interface AuthEnv {
-  Variables: {
-    validatedData?: unknown;
-    user?: MockUser;
-  };
-}
-
-const router = new Hono<AuthEnv>();
-
-// Login schema
 const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-});
+  email: z.string().email().max(320),
+  password: z.string().min(1).max(256),
+})
 
-// Login route
-router.post(
-  '/login',
-  createValidationMiddleware(loginSchema),
-  async (c) => {
-    try {
-      const { email, password } = c.get('validatedData') as { email: string; password: string };
-
-      // Find user
-      const user = users.find((u) => u.email === email);
-      if (!user) {
-        return createErrorResponse(c, 'UNAUTHORIZED', 'Invalid credentials', 401);
-      }
-
-      // Check password (in real app, compare hashed passwords)
-      if (user.password !== password) {
-        return createErrorResponse(c, 'UNAUTHORIZED', 'Invalid credentials', 401);
-      }
-
-      // Create JWT token
-      const token = await sign(
-        { id: user.id, email: user.email, role: user.role },
-        process.env.JWT_SECRET || 'secret'
-      );
-
-      return createApiResponse(c, {
-        token,
-        user: {
-          id: user.id,
-          email: user.email,
-          role: user.role,
-        },
-      });
-    } catch (error) {
-      return createErrorResponse(c, 'INTERNAL_SERVER_ERROR', 'Login failed', 500);
-    }
+function publicAccount(account: AuthAccount) {
+  return {
+    id: account.id,
+    email: account.email,
+    displayName: account.displayName,
+    role: account.role,
   }
-);
+}
 
-export default router;
+function setSessionCookie(c: Parameters<typeof setCookie>[0], token: string) {
+  setCookie(c, SESSION_COOKIE, token, {
+    httpOnly: true,
+    sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+    secure: process.env.NODE_ENV === 'production',
+    path: '/',
+    maxAge: SESSION_TTL_SECONDS,
+  })
+}
+
+router.post('/register', createValidationMiddleware(registrationSchema), async (c) => {
+  try {
+    const input = c.get('validatedData') as z.infer<typeof registrationSchema>
+    const email = input.email.trim().toLowerCase()
+    const existing = await db.select({ id: accounts.id }).from(accounts).where(eq(accounts.email, email)).get()
+    if (existing) return createErrorResponse(c, 'ACCOUNT_EXISTS', 'An account with this email already exists', undefined, 409)
+
+    const now = new Date()
+    const account = await db
+      .insert(accounts)
+      .values({
+        id: crypto.randomUUID(),
+        email,
+        displayName: input.displayName?.trim() ?? null,
+        passwordHash: await hashPassword(input.password),
+        role: 'user',
+        createdAt: now,
+        updatedAt: now,
+      })
+      .returning()
+      .get()
+    const token = await createSession(account.id)
+    setSessionCookie(c, token)
+    return createApiResponse(c, { token, user: publicAccount(account) }, 201)
+  } catch (error) {
+    return createErrorResponse(c, 'DATABASE_ERROR', 'Registration failed', undefined, 500)
+  }
+})
+
+router.post('/login', createValidationMiddleware(loginSchema), async (c) => {
+  try {
+    const input = c.get('validatedData') as z.infer<typeof loginSchema>
+    const email = input.email.trim().toLowerCase()
+    const account = await db.select().from(accounts).where(eq(accounts.email, email)).get()
+    if (!account || !(await verifyPassword(input.password, account.passwordHash))) {
+      return createErrorResponse(c, 'UNAUTHORIZED', 'Invalid credentials', undefined, 401)
+    }
+
+    const token = await createSession(account.id)
+    setSessionCookie(c, token)
+    return createApiResponse(c, { token, user: publicAccount(account) })
+  } catch (error) {
+    return createErrorResponse(c, 'INTERNAL_SERVER_ERROR', 'Login failed', undefined, 500)
+  }
+})
+
+router.get('/me', authMiddleware(), async (c) => {
+  const account = c.get('account')
+  if (!account) return createErrorResponse(c, 'UNAUTHORIZED', 'Authentication required', undefined, 401)
+  return createApiResponse(c, { user: publicAccount(account) })
+})
+
+router.post('/logout', authMiddleware(), async (c) => {
+  const token = getSessionToken(c)
+  if (token) await revokeSession(token)
+  deleteCookie(c, SESSION_COOKIE, { path: '/' })
+  return createApiResponse(c, { loggedOut: true })
+})
+
+export default router

@@ -65,6 +65,7 @@ describe('EditorShell (smoke render)', () => {
     expect(container.textContent).toContain('forge@omix')
     expect(container.textContent).toContain('Create new project')
     expect(container.textContent).toContain('Import JSON')
+    expect(container.textContent).not.toContain('Deploy')
   })
 
   it('creates a project from the empty state and renders the shell', () => {
@@ -93,6 +94,8 @@ describe('EditorShell (smoke render)', () => {
     expect(container.textContent).toContain('Pages')
     expect(container.textContent).toContain('Component Library')
     expect(container.textContent).toContain('Export')
+    expect(container.textContent).toContain('Deploy')
+    expect(container.textContent).toContain('Account')
     // Right-side panel tabs
     expect(container.textContent).toContain('properties')
     expect(container.textContent).toContain('layers')

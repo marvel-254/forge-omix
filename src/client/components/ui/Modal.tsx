@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react'
+import { useId, type ReactNode } from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@client/lib/utils'
 
@@ -56,20 +56,31 @@ export function Modal({
   actions,
   closeButton = true,
 }: ModalProps) {
+  const titleId = useId()
+  const descriptionId = useId()
+
   if (!isOpen) return null
 
   return (
     <div className={cn(modalVariants({ animated }))}>
-      <div className={cn(contentVariants({ size }))}>
+      <div
+        className={cn(contentVariants({ size }))}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={title ? titleId : undefined}
+        aria-describedby={description ? descriptionId : undefined}
+        aria-label={title ? undefined : 'Dialog'}
+      >
         {/* Header */}
         {(title || closeButton) && (
           <div className="flex items-center justify-between border-b border-neutral-200 p-6">
             <div>
-              {title && <h2 className="text-lg font-semibold text-neutral-900">{title}</h2>}
-              {description && <p className="text-sm text-neutral-500 mt-1">{description}</p>}
+              {title && <h2 id={titleId} className="text-lg font-semibold text-neutral-900">{title}</h2>}
+              {description && <p id={descriptionId} className="text-sm text-neutral-500 mt-1">{description}</p>}
             </div>
             {closeButton && (
               <button
+                type="button"
                 onClick={onClose}
                 className="text-neutral-400 hover:text-neutral-600 text-2xl leading-none"
                 aria-label="Close modal"

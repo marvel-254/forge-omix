@@ -259,7 +259,135 @@ forge-omix/
 
 ---
 
-## Post-MVP (Phase 14+)
+## Phase 14: Free Template & Component Library Integrations (Weeks 30-33)
+
+**Goal:** Integrate open-source component libraries and template sources
+
+**Objectives:**
+- Flowbite React / Preline UI integration
+- shadcn/ui + DaisyUI component registry
+- Vercel Templates / Netlify Templates import pipeline
+- HyperUI, Tailblocks, Mamba UI section libraries
+- Tailwind config scanning for dynamic classes
+
+**Acceptance Criteria:**
+- `npm i flowbite-react` etc. work out of the box
+- Component library panel shows Flowbite/Preline/shadcn components
+- Template gallery includes Vercel/Netlify starter templates
+- HyperUI/Tailblocks sections import as editable canvas pages
+
+## Phase 15: Dashboard-Specific UI Libraries (Weeks 33-35)
+
+**Goal:** Data-heavy application components
+
+**Objectives:**
+- Tremor integration (charts, metrics, tables)
+- NextUI integration (accessible, customizable components)
+- PrimeReact integration (enterprise-grade data components)
+- Dashboard layout templates (sidebar, header, KPI grids)
+
+**Acceptance Criteria:**
+- Tremor charts render from schema `Chart` component
+- NextUI/PrimeReact components appear in library panel
+- Dashboard starter template generates valid project
+
+## Phase 16: Animation & 3D Capabilities (Weeks 35-39)
+
+**Goal:** 2D animations + immersive 3D web experiences
+
+**Objectives:**
+- Framer Motion integration (page transitions, component animations)
+- Aceternity UI integration (3D sequences, parallax scrolling)
+- Three.js + React Three Fiber (R3F) renderer component
+- @react-three/drei helpers (cameras, controls, effects)
+- CesiumJS geospatial component
+- Poimandres ecosystem templates
+
+**Acceptance Criteria:**
+- Canvas supports `Motion` component type with Framer Motion props
+- 3D canvas viewport (WebGL) alongside 2D Puck canvas
+- R3F components serialize to schema + generate valid code
+- CesiumJS component for mapping/geospatial pages
+
+## Phase 17: Iconography & Visual Language (Weeks 39-40)
+
+**Goal:** Comprehensive icon system
+
+**Objectives:**
+- Lucide React integration (default icon set)
+- Phosphor Icons integration (duotone, fill, light variants)
+- FontAwesome integration (brands, solid, regular)
+- Icon picker in properties panel
+- Icon token mapping in design system
+
+**Acceptance Criteria:**
+- Icon search/picker in component props (Navbar links, Button icons, etc.)
+- Icons render on canvas and in generated code
+- Design tokens reference icon families
+
+## Phase 18: Full-Stack Boilerplates & Production Templates (Weeks 40-42)
+
+**Goal:** Production-ready full-stack foundations
+
+**Objectives:**
+- Vercel Templates import (Next.js, React, auth, DB)
+- Netlify Templates import (Edge functions, forms, identity)
+- Boilerplate schema validation + migration
+- One-click deploy from template to Vercel/Netlify
+
+**Acceptance Criteria:**
+- Import Vercel/Netlify template → valid forge-omix project
+- Generated code includes auth, routing, DB config
+- Deploy button triggers Vercel/Netlify API
+
+## Phase 19: Debugging & Error Monitoring (Weeks 42-44)
+
+**Goal:** In-builder observability
+
+**Objectives:**
+- Sentry SDK integration (error tracking, session replay)
+- LogRocket integration (session replay, console capture)
+- Eruda on-screen console for mobile preview
+- Debug panel in canvas toolbar
+
+**Acceptance Criteria:**
+- Preview mode shows Eruda console on mobile
+- Sentry/LogRocket init code generated in project
+- Debug panel shows live console errors in preview
+
+## Phase 20: Security Scanning & Vulnerability Diagnostics (Weeks 44-46)
+
+**Goal:** Proactive security in development workflow
+
+**Objectives:**
+- SonarQube Cloud integration (quality gates, SAST)
+- GitHub CodeQL integration (code scanning)
+- Burp Suite Professional integration (DAST for preview URLs)
+- Security report panel in project settings
+
+**Acceptance Criteria:**
+- CI runs CodeQL + SonarQube on generated projects
+- Preview deployment triggers Burp scan (optional)
+- Security findings surfaced in builder UI
+
+## Phase 21: Developer Workflow & AI Automation (Weeks 46-48)
+
+**Goal:** Productivity tooling + autonomous agents
+
+**Objectives:**
+- ntfy integration (mobile notifications on build/deploy)
+- OpenHands agent template (repository automation)
+- HERMES agent template (cloud workflows)
+- Agent dashboard in builder (manage/monitor agents)
+
+**Acceptance Criteria:**
+- ntfy topic config in project settings
+- "Deploy with OpenHands" / "Deploy with HERMES" actions
+- Agent status visible in project browser
+
+---
+
+## Post-MVP (Phase 22+)
 
 | Feature | Description |
 |---------|------------|
@@ -268,8 +396,8 @@ forge-omix/
 | Mobile app builder | React Native export |
 | Plugin system | Extension API |
 | Template marketplace | Community templates |
-| Advanced animations | Framer Motion integration |
-| 3D components | Three.js integration |
+| Advanced animations | Framer Motion integration (Phase 16) |
+| 3D components | Three.js/R3F/CesiumJS (Phase 16) |
 | Voice interface | Speech-to-schema |
 
 ## First Implementation Task (After Planning)

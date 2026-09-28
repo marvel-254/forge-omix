@@ -68,12 +68,48 @@ export function buildTokenCssVars(designTokens: unknown): TokenCssVars {
   const typography = tokens.typography
   if (typography && typeof typography === 'object') {
     const typo = typography as Record<string, unknown>
-    if (typeof typo.fontFamily === 'string' && typo.fontFamily.trim()) {
-      vars['--omix-font-family'] = typo.fontFamily.trim()
+    // Schema shape: fontFamily is a record ({ sans, serif, mono, … }).
+    // Prefer `sans`; fall back to the first non-empty entry. A plain string
+    // is tolerated for projects authored before the record shape.
+    const fam = typo.fontFamily
+    if (typeof fam === 'string' && fam.trim()) {
+      vars['--omix-font-family'] = fam.trim()
+    } else if (fam && typeof fam === 'object') {
+      const record = fam as Record<string, unknown>
+      const first =
+        typeof record.sans === 'string' && record.sans.trim()
+          ? record.sans
+          : Object.values(record).find((v) => typeof v === 'string' && v.trim())
+      if (typeof first === 'string' && first.trim()) {
+        vars['--omix-font-family'] = first.trim()
+      }
+    }
+  }
+
+  // Shadow tokens → the elevation vars used by the Card elevation chips and
+  // the canvas renderer. Level 0 is always "none" and is not tokenized.
+  const shadows = tokens.shadows
+  if (shadows && typeof shadows === 'object') {
+    const shadowMap: Array<[string, string]> = [
+      ['sm', '--omix-shadow-1'],
+      ['md', '--omix-shadow-2'],
+      ['lg', '--omix-shadow-3'],
+    ]
+    const record = shadows as Record<string, unknown>
+    for (const [role, name] of shadowMap) {
+      const value = record[role]
+      if (typeof value === 'string' && isSafeShadow(value.trim())) {
+        vars[name] = value.trim()
+      }
     }
   }
 
   return vars
+}
+
+/** A shadow token must be a plain CSS shadow — no braces or markup chars. */
+function isSafeShadow(value: string): boolean {
+  return value.length > 0 && /^[^{};<>]+$/.test(value)
 }
 
 /** Convert a token color value (#rgb/#rrggbb/rgb()/rgba()) to `r g b`. */

@@ -9,8 +9,13 @@ import { rateLimit, cleanupRateLimitStore } from './middleware/rateLimit'
 
 const app = new Hono<{ Variables: { validated?: unknown } }>()
 
+const corsOrigins = (process.env.CORS_ORIGIN ?? 'http://localhost:3000,http://localhost:5174')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean)
+
 app.use('*', logger())
-app.use('*', cors())
+app.use('*', cors({ origin: corsOrigins, credentials: true }))
 app.use('/api/*', rateLimit(100, 15 * 60 * 1000))
 
 app.get('/health', (c) => {

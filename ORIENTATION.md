@@ -159,6 +159,85 @@
 
 ---
 
+## Bluehost-Level Expansion Program (Phase 13+)
+
+The builder foundation is complete enough to expose a real editor, but Bluehost-level parity requires a customer lifecycle, not more isolated UI primitives. Use `research/bluehost-audit.md` as the product reference for these phases. Do not begin a later phase until its dependency is usable.
+
+### Phase 13 — Accounts, Sessions & Tenant Isolation
+
+**Goal:** Turn global project CRUD into an account-owned product.
+
+**Read:** `research/bluehost-audit.md`, `src/server/routes/auth.ts`, `src/server/middleware/authMiddleware.ts`, `src/server/index.ts`, `src/server/db/schema.ts`, `src/server/services/projectService.ts`, `src/client/lib/api.ts`, `src/client/app/EditorShell.tsx`, and account/auth tests.
+
+**Build:** registration and login UI, secure password/session handling, account model, project ownership, authorization middleware, logout/session recovery, and account-scoped project queries.
+
+**Done when:** two accounts cannot read or mutate each other’s projects, and all protected project/AI/Git/feedback routes enforce the session boundary.
+
+### Phase 14 — AI Creation Lifecycle
+
+**Goal:** Move from chat-based edits to a resumable site-generation flow.
+
+**Read:** `research/bluehost-audit.md`, `docs/09-ai-architecture.md`, `docs/03-universal-schema.md`, `src/server/ai/*`, `src/server/routes/ai.ts`, `src/client/components/ai/AIPanel.tsx`, `src/client/store/schemaStore.ts`, and `src/server/types/schema.ts`.
+
+**Build:** durable creation brief, clarification questions, generation jobs, multiple previews, whole-project generation, prompt-based edits of existing content, AI version history, failure/retry states, and temporary preview URLs.
+
+**Done when:** a user can resume a generation session after reload, apply a generated change, inspect the resulting project schema, and continue into the visual editor.
+
+### Phase 15 — Build, Deployment & Publishing
+
+**Goal:** Turn generated project output into a running, revisable customer site.
+
+**Read:** `research/bluehost-audit.md`, `docs/10-docker-deployment.md`, `src/lib/codegen/*`, `src/client/components/codegen/CodeModal.tsx`, `src/server/services/gitService.ts`, `src/server/db/schema.ts`, `src/server/routes/git.ts`, and `src/client/lib/api.ts`.
+
+**Build:** build jobs, deployment records, build logs, environment/secrets boundary, temporary preview, publish action, live URL, release history, rollback, and staging environments.
+
+**Done when:** a saved project can be built, deployed, previewed, republished, and rolled back with observable status and failure recovery.
+
+### Phase 16 — Plans, Checkout, Domains & Customer Portal
+
+**Goal:** Connect activation to a transparent commercial lifecycle.
+
+**Read:** `research/bluehost-audit.md`, `src/server/db/schema.ts`, `src/server/routes/index.ts`, `src/server/routes/projects.ts`, `src/client/lib/api.ts`, `src/client/app/EditorShell.tsx`, and payment/domain integration decisions before adding dependencies.
+
+**Build:** plan catalog, term selection, cart/order summary, trial and grace state, payment provider boundary, subscriptions, invoices, cancellation, renewal center, domain search/connection boundary, and portal navigation for projects, domains, hosting, and billing.
+
+**Done when:** a user can see promotional and renewal pricing, complete a non-sensitive checkout flow, manage a subscription, and connect or disconnect a domain without conflating domain ownership with hosting cancellation.
+
+### Phase 17 — Operations, Support & Expansion
+
+**Goal:** Make published projects supportable after launch.
+
+**Read:** `research/bluehost-audit.md`, `src/server/routes/feedback.ts`, `src/server/services/*`, `src/client/components/feedback/FeedbackWidget.tsx`, `docs/11-security.md`, and the deployment/build surfaces from Phase 15.
+
+**Build:** account-aware support requests, ticket lifecycle, deployment logs, health/status, backups/restore, usage limits, add-ons, migration/import, plan upgrades/downgrades, and operator triage.
+
+**Done when:** a customer and an operator can inspect the same project/deployment context, receive actionable status, and recover from common operational failures.
+
+### Phase 18 — Production Hardening & Scale
+
+**Goal:** Make the lifecycle safe to operate for real customers.
+
+**Read:** `research/bluehost-audit.md`, `docs/12-performance.md`, `docs/13-testing.md`, `docs/11-security.md`, `drizzle.config.ts`, `Dockerfile`, `docker-compose.yml`, `playwright.config.ts`, and all touched modules.
+
+**Build:** persistent quotas, distributed rate limits where needed, secret management, tenant isolation tests, webhook/idempotency handling, data export/deletion, backup verification, observability, accessibility, performance budgets, migration safety, and lifecycle E2E coverage.
+
+**Done when:** CI verifies account, billing, domain, deployment, renewal, and support flows; production data is isolated, recoverable, observable, and safe to migrate.
+
+### Dependency order
+
+```text
+Phase 13 Accounts
+  → Phase 14 AI creation
+  → Phase 15 Deployment/publishing
+  → Phase 16 Plans/domains/portal
+  → Phase 17 Operations/support
+  → Phase 18 Hardening/scale
+```
+
+Phase 13 and the data-model portions of Phase 16 are the first critical path. Do not build a customer-facing billing or domain surface before project ownership exists.
+
+---
+
 ## 📋 File Quick Reference
 
 ### ALWAYS Read (Phase 0)

@@ -15,6 +15,41 @@ import { projectsApi, ApiError } from '@client/lib/api'
 
 export type SaveState = 'idle' | 'saving' | 'saved' | 'error'
 
+/**
+ * Debounced auto-save (Phase 7 project system). Successful store mutations
+ * schedule a save 2.5s out; the timer fires only while the state is `idle`
+ * (unsaved changes after a confirmed save). Skipped in tests.
+ */
+const AUTOSAVE_DELAY_MS = 2500
+let autosaveTimer: ReturnType<typeof setTimeout> | null = null
+
+export function cancelAutosave(): void {
+  if (autosaveTimer !== null) {
+    clearTimeout(autosaveTimer)
+    autosaveTimer = null
+  }
+}
+
+/**
+ * Fire one auto-save cycle if there are unsaved changes. Exported so tests
+ * can drive it deterministically (timers are skipped under NODE_ENV=test).
+ */
+export function maybeAutosave(): void {
+  const state = useSchemaStore.getState()
+  if (state.project && state.saveState === 'idle') {
+    void state.saveToServer()
+  }
+}
+
+function scheduleAutosave(): void {
+  cancelAutosave()
+  if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') return
+  autosaveTimer = setTimeout(() => {
+    autosaveTimer = null
+    maybeAutosave()
+  }, AUTOSAVE_DELAY_MS)
+}
+
 interface SchemaState {
   project: ProjectSchema | null
   version: string
@@ -40,6 +75,8 @@ interface SchemaState {
   loadFromServer: (projectId: string) => Promise<boolean>
   /** Persist the current canonical project to the server. */
   saveToServer: () => Promise<boolean>
+  /** Close the active project and return to onboarding (cancels auto-save). */
+  closeProject: () => void
   setSelectedIds: (ids: Set<string>) => void
   toggleSelected: (id: string) => void
   selectComponent: (id: string) => void
@@ -55,6 +92,13 @@ interface SchemaState {
     createProject: (name?: string) => ValidationResult<ProjectSchema>
     setActivePage: (pageId: string) => void
     updateProject: (data: Record<string, unknown>) => ValidationResult<ProjectSchema>
+    /**
+     * Validated project patch from Puck canvas edits. Identical to
+     * updateProject but never bumps canvasRevision: Puck owns the canvas
+     * content, so no remount (which would reset its history, selection, and
+     * in-progress drags) is needed for Puck's own edits.
+     */
+    updateProjectFromCanvas: (data: Record<string, unknown>) => ValidationResult<ProjectSchema>
     addPage: (page: Page) => ValidationResult<ProjectSchema>
     removePage: (pageId: string) => ValidationResult<ProjectSchema>
     /** Insert a component into the active page's component tree. */
@@ -99,6 +143,7 @@ const initialState: Omit<SchemaState, 'actions'> = {
   setSaveState: () => {},
   loadFromServer: async () => false,
   saveToServer: async () => false,
+  closeProject: () => {},
 }
 
 export const useSchemaStore = create<SchemaState>()(
@@ -126,6 +171,16 @@ export const useSchemaStore = create<SchemaState>()(
         } as unknown as Record<string, unknown>)
       },
       setSaveState: (saveState, saveError = null) => set({ saveState, saveError }),
+      closeProject: () => {
+        cancelAutosave()
+        set({
+          project: null,
+          activePageId: null,
+          selectedIds: new Set<string>(),
+          saveState: 'idle' as SaveState,
+          saveError: null,
+        })
+      },
       loadFromServer: async (projectId) => {
         try {
           set({ saveState: 'saving', saveError: null })
@@ -155,6 +210,10 @@ export const useSchemaStore = create<SchemaState>()(
       saveToServer: async () => {
         const { project } = get()
         if (!project) return false
+        const projectId = project.id
+        // Only report the outcome while this project is still open — the
+        // user may have closed it (or opened another) mid-flight.
+        const stillOpen = () => get().project?.id === projectId
         try {
           set({ saveState: 'saving', saveError: null })
           const payload = project as unknown as Record<string, unknown>
@@ -168,11 +227,11 @@ export const useSchemaStore = create<SchemaState>()(
               throw error
             }
           }
-          set({ saveState: 'saved' })
+          if (stillOpen()) set({ saveState: 'saved' })
           return true
         } catch (error) {
           const message = error instanceof ApiError ? error.message : 'Failed to save project to server'
-          set({ saveState: 'error', saveError: message })
+          if (stillOpen()) set({ saveState: 'error', saveError: message })
           return false
         }
       },
@@ -194,6 +253,7 @@ export const useSchemaStore = create<SchemaState>()(
         }),
       actions: {
         loadProject: (data) => {
+          cancelAutosave()
           const result = validate(ProjectSchema, data)
           if (result.valid && result.data) {
             const editor = (
@@ -211,6 +271,10 @@ export const useSchemaStore = create<SchemaState>()(
                 viewport: editor?.viewport ?? 'desktop',
                 fitToWidth: editor?.fitToWidth ?? false,
               },
+              // A freshly loaded project is unsaved by definition — the
+              // server copy (if any) is only confirmed by an explicit save.
+              saveState: 'idle' as SaveState,
+              saveError: null,
             })
           }
           return result
@@ -277,6 +341,40 @@ export const useSchemaStore = create<SchemaState>()(
           const result = validate(ProjectSchema, updated as unknown)
           if (result.valid && result.data) {
             set({ project: result.data, lastValidated: new Date() })
+            // Puck only reads `data` on mount, so external edits that change
+            // page content (PropertiesPanel prop/style patches) must remount
+            // the canvas via its revision key. Prefs-only patches
+            // (settings.editor) contain no pages and skip the remount.
+            // Double-bumps from structural actions coalesce in the same tick.
+            if ('pages' in data) {
+              set({ canvasRevision: get().canvasRevision + 1 })
+            }
+            // A confirmed save is now stale → mark unsaved and schedule
+            // a debounced auto-save (fires only while still `idle`).
+            if (get().saveState === 'saved') {
+              set({ saveState: 'idle' as SaveState })
+            }
+            scheduleAutosave()
+          }
+          return result
+        },
+        updateProjectFromCanvas: (data) => {
+          const { project } = get()
+          if (!project) {
+            return { valid: false }
+          }
+          const updated = { ...project, ...data, updatedAt: new Date().toISOString() }
+          const result = validate(ProjectSchema, updated as unknown)
+          if (result.valid && result.data) {
+            // No canvasRevision bump: Puck owns canvas content, so its own
+            // edits must not remount the canvas (remounting would reset its
+            // history, clear selection, and abort in-progress drags).
+            set({ project: result.data, lastValidated: new Date() })
+            // Puck edits change content too — mark stale and auto-save.
+            if (get().saveState === 'saved') {
+              set({ saveState: 'idle' as SaveState })
+            }
+            scheduleAutosave()
           }
           return result
         },
@@ -296,12 +394,12 @@ export const useSchemaStore = create<SchemaState>()(
           }
           const result = get().actions.updateProject(updated as unknown as Record<string, unknown>)
           if (result.valid) {
-            // Open the new page immediately
-            set((state) => ({
+            // Open the new page immediately (canvasRevision already bumped by
+            // updateProject since this patch contains `pages`).
+            set({
               activePageId: page.id,
               selectedIds: new Set<string>(),
-              canvasRevision: state.canvasRevision + 1,
-            }))
+            })
           }
           return result
         },
@@ -322,11 +420,10 @@ export const useSchemaStore = create<SchemaState>()(
           }
           const result = get().actions.updateProject(updated as unknown as Record<string, unknown>)
           if (result.valid && get().activePageId === pageId) {
-            set((state) => ({
+            set({
               activePageId: remaining[0]?.id ?? null,
               selectedIds: new Set<string>(),
-              canvasRevision: state.canvasRevision + 1,
-            }))
+            })
           }
           return result
         },
@@ -347,12 +444,9 @@ export const useSchemaStore = create<SchemaState>()(
           }
           const result = get().actions.updateProject(updated as unknown as Record<string, unknown>)
           if (result.valid) {
-            // Remount Puck so its canvas picks up externally-added content
-            // (Puck only reads the `data` prop on mount).
-            set({
-              selectedIds: new Set([component.id]),
-              canvasRevision: get().canvasRevision + 1,
-            })
+            // Select the new component (canvasRevision already bumped by
+            // updateProject, remounting Puck to pick up the added content).
+            set({ selectedIds: new Set([component.id]) })
           }
           return result
         },
@@ -376,9 +470,8 @@ export const useSchemaStore = create<SchemaState>()(
               next.delete(componentId)
               return { selectedIds: next }
             })
-            // Remount Puck: its mounted copy still contains the deleted
-            // component and would resurrect it on the next Puck-side edit.
-            set({ canvasRevision: get().canvasRevision + 1 })
+            // canvasRevision bump comes from updateProject; the remount also
+            // prevents Puck's mounted copy from resurrecting the deleted row.
           }
           return result
         },
@@ -407,10 +500,8 @@ export const useSchemaStore = create<SchemaState>()(
             updatedAt: new Date().toISOString(),
           }
           const result = get().actions.updateProject(updated as unknown as Record<string, unknown>)
-          if (result.valid) {
-            // Puck only reads `data` on mount — remount so the canvas reflects the new order.
-            set({ canvasRevision: get().canvasRevision + 1 })
-          }
+          // canvasRevision bumps for content changes now live in updateProject
+          // (any patch containing `pages`), so no explicit bump is needed here.
           return result
         },
         addComponent: (component) => {

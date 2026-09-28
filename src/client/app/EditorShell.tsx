@@ -4,13 +4,34 @@ import { Canvas } from '../canvas/Canvas'
 import ComponentLibrary from '../components/library/ComponentLibrary'
 import { PropertiesPanel } from '../panels/PropertiesPanel'
 import { LayersPanel } from '../panels/LayersPanel'
+import { TokensPanel } from '../panels/TokensPanel'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import type { ComponentType } from '../components/library'
 import { defaultPropsFor } from '../canvas/registry'
+import { TemplateGallery } from '../components/templates/TemplateGallery'
+import { CodeModal } from '../components/codegen/CodeModal'
+import { ProjectBrowser } from '../components/projects/ProjectBrowser'
+import { ProjectSettings } from '../components/projects/ProjectSettings'
+import { GitModal } from '../components/git/GitModal'
+import { DeploymentPanel } from '../components/deployments/DeploymentPanel'
+import { DomainPanel } from '../components/domains/DomainPanel'
+import { AccountPanel } from '../components/account/AccountPanel'
+import { PlanSelector } from '../components/commerce/PlanSelector'
+import { AIPanel } from '../components/ai/AIPanel'
+import { AIProjectCreationWizard } from '../components/ai/AIProjectCreationWizard'
+import type { AiProjectCreationResult } from '@client/lib/aiCreation'
+import { ErrorBoundary } from '../components/ui/ErrorBoundary'
+import { FeedbackWidget } from '../components/feedback/FeedbackWidget'
+import type { BuiltInTemplate } from '../templates/builtIn'
+import {
+  exportProjectAsTemplate,
+  isTemplateDocument,
+  normalizeImportedTemplate,
+} from '../templates/instantiate'
 import type { Component, Page } from '@client/types/schema'
 
-type PanelTab = 'properties' | 'layers'
+type PanelTab = 'properties' | 'layers' | 'tokens'
 
 /**
  * Top-level builder layout: header, pages sidebar, canvas, and
@@ -41,6 +62,19 @@ export function EditorShell() {
   )
   const [panelTab, setPanelTab] = useState<PanelTab>('properties')
   const [newPagePath, setNewPagePath] = useState('')
+  const [onboardingView, setOnboardingView] = useState<'home' | 'gallery'>('home')
+  const [importedTemplate, setImportedTemplate] = useState<BuiltInTemplate | null>(null)
+  const [homeError, setHomeError] = useState<string | null>(null)
+  const [dragActive, setDragActive] = useState(false)
+  const [codeOpen, setCodeOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [gitOpen, setGitOpen] = useState(false)
+  const [deploymentOpen, setDeploymentOpen] = useState(false)
+  const [domainsOpen, setDomainsOpen] = useState(false)
+  const [accountOpen, setAccountOpen] = useState(false)
+  const [plansOpen, setPlansOpen] = useState(false)
+  const [aiOpen, setAiOpen] = useState(false)
+  const closeProject = useSchemaStore((s) => s.closeProject)
 
   const handleAddComponent = useCallback(
     (type: ComponentType) => {
@@ -69,6 +103,15 @@ export function EditorShell() {
   const handleSave = useCallback(async () => {
     await saveToServer()
   }, [saveToServer])
+
+  const handleCreateFromBrief = useCallback(
+    (result: AiProjectCreationResult) => {
+      const loaded = loadProject(result.project)
+      if (loaded.valid) setAiOpen(false)
+      return loaded
+    },
+    [loadProject]
+  )
 
   const handleOpenProject = useCallback(
     async (projectId: string) => {
@@ -99,10 +142,88 @@ export function EditorShell() {
 
   const pages = useMemo(() => project?.pages ?? [], [project])
 
+  /** Open an imported JSON document: template files go to the gallery form. */
+  const handleImportedJson = useCallback(
+    (parsed: unknown) => {
+      if (isTemplateDocument(parsed)) {
+        setImportedTemplate(normalizeImportedTemplate(parsed as Record<string, unknown>))
+        setHomeError(null)
+        setOnboardingView('gallery')
+        return
+      }
+      const candidate = (parsed as { project?: unknown })?.project ?? parsed
+      const result = loadProject(candidate)
+      if (!result.valid) {
+        setHomeError('Invalid project file: schema validation failed')
+      }
+    },
+    [loadProject]
+  )
+
+  const handleExportTemplate = useCallback(() => {
+    if (!project) return
+    const payload = exportProjectAsTemplate(project as unknown as Record<string, unknown>, {
+      name: `${project.name} template`,
+      description: `Exported from ${project.name}`,
+    })
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = `${project.id}.template.json`
+    anchor.click()
+    URL.revokeObjectURL(url)
+  }, [project])
+
   if (!project) {
     return (
-      <div className="min-h-screen bg-neutral-100 flex items-center justify-center p-4">
-        <div className="w-full max-w-md rounded-xl border border-neutral-200 bg-white p-8 text-center shadow-sm">
+      <main
+        className="min-h-screen bg-neutral-100 flex items-center justify-center p-4"
+        onDragOver={(e) => {
+          if (e.dataTransfer.types.includes('Files')) {
+            e.preventDefault()
+            setDragActive(true)
+          }
+        }}
+        onDragLeave={() => setDragActive(false)}
+        onDrop={async (e) => {
+          if (!e.dataTransfer.types.includes('Files')) return
+          e.preventDefault()
+          setDragActive(false)
+          const file = e.dataTransfer.files?.[0]
+          if (!file) return
+          try {
+            handleImportedJson(JSON.parse(await file.text()))
+          } catch {
+            setHomeError('Could not parse the dropped file as JSON')
+          }
+        }}
+      >
+        <div
+          className={`w-full max-w-md rounded-xl border bg-white p-8 text-center shadow-sm transition-colors ${
+            dragActive ? 'border-primary-400 ring-2 ring-primary-200' : 'border-neutral-200'
+          }`}
+        >
+          {dragActive && (
+            <p className="mb-3 text-sm font-medium text-primary-700">
+              Drop a project or template JSON file to open it
+            </p>
+          )}
+          {onboardingView === 'gallery' ? (
+            <TemplateGallery
+              initialTemplate={importedTemplate}
+              onBack={() => {
+                setOnboardingView('home')
+                setImportedTemplate(null)
+              }}
+              onCreate={(payload) => {
+                const result = loadProject(payload)
+                if (!result.valid) setHomeError('The template produced an invalid project.')
+                return result
+              }}
+            />
+          ) : (
+          <>
           <div className="mx-auto mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-primary-500 text-lg font-bold text-white">
             O
           </div>
@@ -110,8 +231,11 @@ export function EditorShell() {
           <p className="mt-1 text-sm text-neutral-500 mb-6">
             AI-native visual software builder
           </p>
-          <div className="flex items-center justify-center gap-2">
+          <div className="flex flex-wrap items-center justify-center gap-2">
             <Button onClick={() => void createProjectOnServer()}>Create new project</Button>
+            <Button variant="outline" onClick={() => setAiOpen(true)}>
+              Start with an AI brief
+            </Button>
             <label className="inline-block">
               <span className="sr-only">Import project JSON</span>
               <input
@@ -123,15 +247,11 @@ export function EditorShell() {
                   if (!file) return
                   try {
                     const text = await file.text()
-                    const parsed = JSON.parse(text)
-                    // Accept both raw projects and the export envelope
-                    const candidate = parsed?.project ?? parsed
-                    const result = loadProject(candidate)
-                    if (!result.valid) {
-                      alert('Invalid project file: schema validation failed')
-                    }
+                    handleImportedJson(JSON.parse(text))
                   } catch {
-                    alert('Could not parse the selected file as JSON')
+                    setHomeError('Could not parse the selected file as JSON')
+                  } finally {
+                    e.target.value = ''
                   }
                 }}
               />
@@ -139,6 +259,11 @@ export function EditorShell() {
                 Import JSON
               </span>
             </label>
+          </div>
+          <div className="mt-2 flex items-center justify-center">
+            <Button variant="link" size="sm" onClick={() => setOnboardingView('gallery')}>
+              Start from a template
+            </Button>
           </div>
           <div className="my-5 flex items-center gap-3 text-xs text-neutral-400">
             <span className="h-px flex-1 bg-neutral-200" />
@@ -160,15 +285,31 @@ export function EditorShell() {
               Open
             </Button>
           </form>
+          {homeError && <p className="mt-2 text-xs text-red-600">{homeError}</p>}
+          <ProjectBrowser onOpen={(id) => void handleOpenProject(id)} />
           {saveState === 'error' && saveError && (
             <p className="mt-2 text-xs text-red-600">{saveError}</p>
           )}
           <p className="mt-5 text-xs leading-relaxed text-neutral-400">
             Projects are saved to the API when the server is reachable; otherwise they stay local.
-            Exports match the universal schema (schemas/project.schema.json).
+            Exports match the universal schema (schemas/project.schema.json). You can also drop a
+            project or template JSON file anywhere on this screen.
           </p>
-        </div>
-      </div>
+          </>
+          )}
+         </div>
+         {aiOpen && (
+           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4">
+             <div className="flex h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl bg-white shadow-xl">
+               <AIProjectCreationWizard
+                 onComplete={handleCreateFromBrief}
+                 onCancel={() => setAiOpen(false)}
+               />
+             </div>
+           </div>
+         )}
+         <FeedbackWidget />
+      </main>
     )
   }
 
@@ -176,11 +317,25 @@ export function EditorShell() {
     <div className="h-screen flex flex-col bg-neutral-50">
       {/* Header */}
       <header className="flex h-12 items-center gap-3 bg-white px-4 shadow-[0_1px_0_0_rgb(0_0_0/0.06)]">
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={closeProject}
+          aria-label="Back to projects"
+          title="Back to projects"
+        >
+          ‹
+        </Button>
         <span className="font-semibold tracking-tight text-neutral-900">forge@omix</span>
         <span className="h-4 w-px bg-neutral-200" aria-hidden="true" />
-        <span className="max-w-[240px] truncate text-sm text-neutral-500">
+        <button
+          type="button"
+          onClick={() => setSettingsOpen(true)}
+          title="Project settings"
+          className="max-w-[240px] truncate rounded px-1 text-sm text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-800"
+        >
           {project.name}
-        </span>
+        </button>
         <div className="ml-auto flex items-center gap-2">
           <span className="text-xs tabular-nums text-neutral-400">v{project.version}</span>
           <span
@@ -208,6 +363,71 @@ export function EditorShell() {
             </Button>
             <Button size="sm" variant="outline" onClick={handleExport}>
               Export
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleExportTemplate}
+              title="Download this project as a reusable template file"
+            >
+              Template
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => setCodeOpen(true)}
+              title="Preview and download the generated React + Vite code"
+            >
+              Code
+            </Button>
+             <Button
+               size="sm"
+               variant="outline"
+               onClick={() => setDeploymentOpen(true)}
+               title="Build, inspect, publish, and roll back deployments"
+             >
+               Deploy
+             </Button>
+               <Button
+                 size="sm"
+                 variant="outline"
+                 onClick={() => setAccountOpen(true)}
+                 title="View account, projects, and plans"
+               >
+                 Account
+               </Button>
+               <Button
+                 size="sm"
+                 variant="outline"
+                 onClick={() => setPlansOpen(true)}
+                title="Compare hosting plans and start checkout"
+              >
+                Plans
+              </Button>
+              {project && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setDomainsOpen(true)}
+                  title="Search, save, connect, and disconnect domains"
+                >
+                  Domains
+                </Button>
+              )}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setGitOpen(true)}
+              title="Version control for server workspaces"
+            >
+              Git
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setAiOpen(true)}
+              title="AI design assistant"
+            >
+              AI
             </Button>
           </div>
       </header>
@@ -240,7 +460,7 @@ export function EditorShell() {
                       variant="ghost"
                       size="sm"
                       aria-label={`Delete page ${p.title}`}
-                      className="opacity-0 group-hover:opacity-100"
+                      className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
                       onClick={() => removePage(p.id)}
                     >
                       ✕
@@ -271,7 +491,9 @@ export function EditorShell() {
         </aside>
 
         {/* Canvas */}
-        <Canvas viewport={viewport} onViewportChange={setViewport} />
+        <ErrorBoundary area="canvas" key={`${activePageId}-${pages.length}`}>
+          <Canvas viewport={viewport} onViewportChange={setViewport} />
+        </ErrorBoundary>
 
         {/* Right sidebar: panels */}
         <aside className="w-72 shrink-0 border-l bg-white flex flex-col min-h-0">
@@ -293,10 +515,43 @@ export function EditorShell() {
             ))}
           </div>
           <div className="flex-1 overflow-y-auto">
-            {panelTab === 'properties' ? <PropertiesPanel /> : <LayersPanel />}
+            {panelTab === 'properties' ? (
+              <PropertiesPanel />
+            ) : panelTab === 'tokens' ? (
+              <TokensPanel />
+            ) : (
+              <LayersPanel />
+            )}
           </div>
         </aside>
       </div>
+      {codeOpen && project && <CodeModal project={project} onClose={() => setCodeOpen(false)} />}
+      {settingsOpen && project && <ProjectSettings onClose={() => setSettingsOpen(false)} />}
+      {gitOpen && <GitModal onClose={() => setGitOpen(false)} />}
+        {deploymentOpen && project && (
+          <DeploymentPanel projectId={project.id} onClose={() => setDeploymentOpen(false)} />
+        )}
+        {domainsOpen && project && (
+          <DomainPanel projectId={project.id} onClose={() => setDomainsOpen(false)} />
+        )}
+        {accountOpen && project && (
+          <AccountPanel
+            isOpen={accountOpen}
+            onClose={() => setAccountOpen(false)}
+            onOpenProject={(projectId) => {
+              setAccountOpen(false)
+              void handleOpenProject(projectId)
+            }}
+            onShowPlans={() => {
+              setAccountOpen(false)
+              setPlansOpen(true)
+            }}
+          />
+        )}
+        {plansOpen && project && <PlanSelector projectId={project.id} onClose={() => setPlansOpen(false)} />}
+       {aiOpen && <AIPanel onClose={() => setAiOpen(false)} onCreateProject={handleCreateFromBrief} />}
+
+      <FeedbackWidget />
     </div>
   )
 }
