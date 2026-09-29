@@ -42,7 +42,7 @@
 
 - `docker compose build forge` running detached (log: `/tmp/build3.log`). Client build (`tsc && vite build`) **passed**; last seen in production-stage `apt-get`. NOTE: /tmp may not survive a session restart.
 - Image tag to expect when it finishes: `forge-omix-forge:latest` (currently a 10-day-old stale one exists).
-- Working tree has all changes **uncommitted**. `git status` shows: modified `docker-compose.yml`, `.env.example`, `Dockerfile`, `docs/10-docker-deployment.md`, `tsconfig.server.json`, `src/server/ai/ollama.ts`, `src/server/ai/router.ts`, `src/server/routes/ai.ts`; new `.dockerignore`, `src/server/ai/openai-compat.ts`, `src/server/ai/anthropic.ts`, `tests/unit/ai-providers.test.ts`; deleted `.coolify/`.
+- All changes are **committed**: `a3a29f4` "feat: multi-provider AI + app-only local Docker stack" (on master, local only — not pushed). Note: this commit also drops the upstream-committed `node_modules/` and `.coolify/` from tracking and adds `.gitignore`.
 
 ## 4. Next steps (in order)
 
