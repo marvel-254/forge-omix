@@ -1,5 +1,18 @@
 # 10 — Docker Deployment
 
+> **Canonical setup:** the repo-root `docker-compose.yml` is the source of truth for
+> fully local hosting. It runs a single `forge` service (app + SQLite + nginx).
+> AI providers are external and key-based — add keys to `.env` (OpenRouter,
+> OpenAI, Anthropic, Groq, DeepSeek, Mistral, or a custom OpenAI-compatible
+> endpoint). Ollama is not bundled; if you run one on the host, set
+> `AI_MODE=auto` and `OLLAMA_BASE_URL=http://host.docker.internal:11434`.
+>
+> ```bash
+> cp .env.example .env   # add provider key(s)
+> docker compose up -d --build
+> # UI: http://localhost:8080
+> ```
+
 ## 10.1 Architecture
 
 Single-container deployment. The Node.js process serves both the API and the frontend assets. LibSQL runs embedded in the application.

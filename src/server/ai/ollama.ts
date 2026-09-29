@@ -77,9 +77,9 @@ export class OllamaProvider implements AIProvider {
     if (!res.ok) {
       throw new AIProviderError(this.id, `HTTP ${res.status}`, res.status)
     }
-    const data = await res.json()
-    const models = Array.isArray(data?.models) ? data.models : []
-    return models.map((m: { name?: string }) => ({
+    const data = (await res.json()) as { models?: unknown }
+    const models = Array.isArray(data?.models) ? (data.models as Array<{ name?: string }>) : []
+    return models.map((m) => ({
       id: String(m?.name ?? 'unknown'),
       name: String(m?.name ?? 'unknown'),
       provider: this.id,

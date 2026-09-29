@@ -1,8 +1,16 @@
+# forge-omix — fully local Docker stack.
+# App (nginx + Hono + SQLite) in one container. AI providers are external and
+# key-based — add whichever you use in .env (OpenRouter, OpenAI, Anthropic,
+# Groq, DeepSeek, Mistral, or a custom OpenAI-compatible endpoint).
+# Start:  docker compose up -d --build
+# UI:     http://localhost:8080
+
 services:
   forge:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: forge-omix
     ports:
       - "8080:8080"
     volumes:
@@ -14,10 +22,42 @@ services:
       # would land in the ephemeral container filesystem).
       - DATABASE_URL=file:/data/forge.db
       - GIT_WORKSPACES=/data/workspaces
-      - AI_MODE=${AI_MODE:-local}
+      # AI providers — all key-based, none bundled. 'cloud' = registered keys
+      # only; 'mock' = offline demo provider; 'local'/'auto' also enable the
+      # Ollama provider for a host-installed Ollama (set OLLAMA_BASE_URL to
+      # http://host.docker.internal:11434 to reach one from this container).
+      - AI_MODE=${AI_MODE:-cloud}
+      - AI_PROVIDER_ORDER=${AI_PROVIDER_ORDER:-}
+      - OLLAMA_ENABLED=${OLLAMA_ENABLED:-false}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
-      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://localhost:11434}
+      - OPENROUTER_BASE_URL=${OPENROUTER_BASE_URL:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - ANTHROPIC_BASE_URL=${ANTHROPIC_BASE_URL:-}
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - GROQ_BASE_URL=${GROQ_BASE_URL:-}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
+      - DEEPSEEK_BASE_URL=${DEEPSEEK_BASE_URL:-}
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY:-}
+      - MISTRAL_BASE_URL=${MISTRAL_BASE_URL:-}
+      # Any OpenAI-compatible endpoint (LM Studio, vLLM, …) when not using
+      # native OpenAI; registered under the 'openai' model prefix.
+      - OPENAI_COMPAT_BASE_URL=${OPENAI_COMPAT_BASE_URL:-}
+      - OPENAI_COMPAT_API_KEY=${OPENAI_COMPAT_API_KEY:-}
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:8080/health').then((r) => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   forge-data:

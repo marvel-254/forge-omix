@@ -78,7 +78,7 @@ export function AIPanel({
         setModelsError(
           e instanceof ApiError
             ? e.message
-            : 'AI is not configured (set OPENROUTER_API_KEY or AI_MODE=local|mock)'
+            : 'AI is not configured (add a provider API key in .env — OpenRouter, OpenAI, Anthropic, Groq, DeepSeek, Mistral, or a custom OpenAI-compatible endpoint — or AI_MODE=mock)'
         )
       })
   }, [])

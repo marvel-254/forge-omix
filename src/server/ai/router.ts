@@ -16,6 +16,17 @@ export class ProviderRouter {
     this.providers.set(provider.id, provider)
   }
 
+  /**
+   * Replace the fallback chain (e.g. from AI_PROVIDER_ORDER). Ids not in
+   * the registry are ignored; an empty list is a no-op.
+   */
+  setFallbackChain(chain: string[]): void {
+    const valid = chain.filter((id) => this.providers.has(id))
+    if (valid.length > 0) {
+      ;(this.fallbackChain as string[]).splice(0, this.fallbackChain.length, ...valid)
+    }
+  }
+
   getProvider(id: string): AIProvider | undefined {
     return this.providers.get(id)
   }

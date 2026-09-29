@@ -1,0 +1,18 @@
+# Keep the Docker build context small and clean
+node_modules
+dist
+dist-server
+.git
+.github
+.coolify
+.kilo
+.freebuff
+.env
+*.db
+*.db-*
+/backups
+/docs
+/research
+/tests
+coverage
+.DS_Store
