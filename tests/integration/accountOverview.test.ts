@@ -27,7 +27,7 @@ describe('account overview', () => {
     root = await mkdtemp(join(tmpdir(), 'omix-account-overview-'))
     process.env.DATABASE_URL = `file:${join(root, 'test.db')}`
     const { SchemaVersionManager } = await import('@server/services/versionService')
-    expect(await SchemaVersionManager.runPendingMigrations(resolve('src/server/db/migrations'))).toBe(8)
+    expect(await SchemaVersionManager.runPendingMigrations(resolve('src/server/db/migrations'))).toBe(9)
 
     const apiRouter = (await import('@server/routes')).default
     app = new Hono()

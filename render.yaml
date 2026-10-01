@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: forge-omix
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "10000"
+      - key: CORS_ORIGIN
+        value: "https://forge-omix.onrender.com"
+      - key: DATABASE_URL
+        value: file:/data/forge.db
+      - key: GIT_WORKSPACES
+        value: /data/workspaces
+      - key: AI_MODE
+        value: mock
+    # Free preview storage is ephemeral; the SQLite file resets on restarts or redeploys.
+    # nginx listens on Render's configured HTTP port; Hono remains on API_PORT 3001 internally.

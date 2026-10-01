@@ -14,6 +14,7 @@ import deploymentsRouter from './deployments';
 import commerceRouter from './commerce';
 import domainsRouter from './domains';
 import accountRouter from './account';
+import supportRouter from './support';
 
 router.route('/projects', projectsRouter);
 router.route('/pages', pagesRouter);
@@ -26,5 +27,6 @@ router.route('/deployments', deploymentsRouter);
 router.route('/domains', domainsRouter);
 router.route('/account', accountRouter);
 router.route('/', commerceRouter);
+router.route('/support', supportRouter);
 
 export default router;

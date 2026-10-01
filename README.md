@@ -57,15 +57,47 @@ Omix Builder is not a mockup tool. The visual canvas is a structured, machine-re
 - [ ] Phase 12 — Testing
 - [ ] Phase 13 — Beta
 
+## Quick Install (Docker)
+
+Run forge@omix with one command — the installer pulls the pre-built image,
+provisions persistent storage and an env file, and starts the app:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/marvel-254/forge-omix/main/install.sh | sh
+```
+
+Then open **http://localhost:8080**.
+
+- Prefer an explicit port: `FORGE_PORT=8081 sh -c "$(curl -fsSL https://raw.githubusercontent.com/marvel-254/forge-omix/main/install.sh)"`
+- Run in offline/demo mode (no AI keys): `FORGE_MODE=mock sh -c "$(curl -fsSL https://raw.githubusercontent.com/marvel-254/forge-omix/main/install.sh)"`
+- Config lives in `~/.forge-omix/.env` — add OpenRouter, OpenAI, Anthropic, Groq, DeepSeek or Mistral keys to enable cloud AI providers, then restart the container.
+
 ## Getting Started
 
-### Docker
+### Docker (self-host)
 
+A single container bundles the frontend (nginx) and backend (Hono) with SQLite
+storage on a persistent volume. AI providers are external and key-based.
 
+```sh
+docker compose up -d --build   # build from source
+# or pull a pre-built image:
+docker compose -f <(curl -fsSL https://raw.githubusercontent.com/marvel-254/forge-omix/main/install.sh) up -d
+```
+
+- UI: http://localhost:8080
+- Data + Git workspaces persist on the `forge-data` volume.
 
 ### Development
 
-
+```sh
+pnpm install
+pnpm dev            # Vite dev server (frontend)
+pnpm dev:server     # Hono backend (tsx watch) on :3001
+pnpm test           # unit + integration tests
+pnpm build          # typecheck + production client build
+pnpm build:server   # bundle the server to dist-server/index.js
+```
 
 ## License
 

@@ -28,7 +28,7 @@ describe('plan catalog and checkout sessions', () => {
     root = await mkdtemp(join(tmpdir(), 'omix-checkout-'))
     process.env.DATABASE_URL = `file:${join(root, 'test.db')}`
     const { SchemaVersionManager } = await import('@server/services/versionService')
-    expect(await SchemaVersionManager.runPendingMigrations(resolve('src/server/db/migrations'))).toBe(8)
+    expect(await SchemaVersionManager.runPendingMigrations(resolve('src/server/db/migrations'))).toBe(9)
 
     const apiRouter = (await import('@server/routes')).default
     app = new Hono()
@@ -182,7 +182,7 @@ describe('plan catalog and checkout sessions', () => {
     const tables = await db.all<{ name: string }>(sql`SELECT name FROM sqlite_master WHERE type = 'table'`)
     expect(tables.map((table) => table.name)).toContain('checkout_sessions')
 
-    expect(await SchemaVersionManager.rollback(resolve('src/server/db/migrations'), '0006')).toBe(2)
+    expect(await SchemaVersionManager.rollback(resolve('src/server/db/migrations'), '0006')).toBe(3)
     const rolledBackTables = await db.all<{ name: string }>(sql`SELECT name FROM sqlite_master WHERE type = 'table'`)
     expect(rolledBackTables.map((table) => table.name)).not.toContain('checkout_sessions')
   })

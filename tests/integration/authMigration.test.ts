@@ -26,7 +26,7 @@ describe('account migrations', () => {
     process.env.DATABASE_URL = `file:${join(root, 'test.db')}`
     const { db } = await import('@server/db')
     const { SchemaVersionManager } = await import('@server/services/versionService')
-    expect(await SchemaVersionManager.runPendingMigrations(resolve('src/server/db/migrations'))).toBe(8)
+    expect(await SchemaVersionManager.runPendingMigrations(resolve('src/server/db/migrations'))).toBe(9)
     const tables = await db.all<{ name: string }>(sql`SELECT name FROM sqlite_master WHERE type = 'table'`)
     expect(tables.map((table) => table.name)).toEqual(expect.arrayContaining(['accounts', 'sessions', 'projects', 'feedback']))
   })
@@ -45,7 +45,7 @@ describe('account migrations', () => {
     await db.run(sql`INSERT INTO schema_versions (version, name, checksum, state) VALUES ('0003', 'feedback', '', 'applied')`)
     await db.run(sql`INSERT INTO projects (id, name, version, framework, css_strategy, router_mode, created_at, updated_at) VALUES ('legacy', 'Legacy', '1.0.0', 'react', 'tailwind', 'file', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`)
 
-    expect(await SchemaVersionManager.runPendingMigrations(resolve('src/server/db/migrations'))).toBe(5)
+    expect(await SchemaVersionManager.runPendingMigrations(resolve('src/server/db/migrations'))).toBe(6)
     const project = await db.get<{ name: string }>(sql`SELECT name FROM projects WHERE id = 'legacy'`)
     const tables = await db.all<{ name: string }>(sql`SELECT name FROM sqlite_master WHERE type = 'table'`)
     expect(project?.name).toBe('Legacy')

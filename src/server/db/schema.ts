@@ -218,6 +218,28 @@ export const feedback = sqliteTable('feedback', {
   createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
 })
 
+export const supportTickets = sqliteTable('support_tickets', {
+  id: text('id').primaryKey(),
+  accountId: text('account_id').notNull().references(() => accounts.id),
+  subject: text('subject').notNull(),
+  category: text('category').notNull(),
+  priority: text('priority').notNull().default('normal'),
+  status: text('status').notNull().default('open'),
+  assignedTo: text('assigned_to').references(() => accounts.id),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+  closedAt: integer('closed_at', { mode: 'timestamp_ms' }),
+})
+
+export const supportMessages = sqliteTable('support_messages', {
+  id: text('id').primaryKey(),
+  ticketId: text('ticket_id').notNull().references(() => supportTickets.id),
+  accountId: text('account_id').notNull().references(() => accounts.id),
+  body: text('body').notNull(),
+  internal: integer('internal', { mode: 'boolean' }).notNull().default(false),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+})
+
 export const schemaVersions = sqliteTable('schema_versions', {
   version: text('version').primaryKey(),
   name: text('name').notNull(),

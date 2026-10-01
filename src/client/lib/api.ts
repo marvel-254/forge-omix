@@ -524,6 +524,42 @@ export const feedbackApi = {
     request<{ id: string }>('/api/feedback', { method: 'POST', body: JSON.stringify(payload) }),
 }
 
+export interface SupportTicket {
+  id: string
+  subject: string
+  category: string
+  priority: string
+  status: string
+  accountId: string
+  requesterEmail?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface SupportMessage {
+  id: string
+  ticketId: string
+  accountId: string
+  body: string
+  internal: boolean
+  createdAt: string
+}
+
+export const supportApi = {
+  list: () => request<SupportTicket[]>('/api/support'),
+  get: (id: string) => request<SupportTicket & { messages: SupportMessage[] }>(`/api/support/${id}`),
+  create: (payload: { subject: string; category: string; message: string }) =>
+    request<{ id: string }>('/api/support', { method: 'POST', body: JSON.stringify(payload) }),
+  reply: (id: string, body: string) =>
+    request<{ sent: true }>(`/api/support/${id}/replies`, { method: 'POST', body: JSON.stringify({ body }) }),
+  reopen: (id: string) =>
+    request<{ reopened: true }>(`/api/support/${id}/reopen`, { method: 'POST' }),
+  adminReply: (id: string, body: string, internal = false) =>
+    request<{ sent: true }>(`/api/support/${id}/admin-replies`, { method: 'POST', body: JSON.stringify({ body, internal }) }),
+  update: (id: string, payload: { status?: string; priority?: string; assignedTo?: string | null }) =>
+    request<{ updated: true }>(`/api/support/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
+}
+
 export const gitApi = {
   init: (dir: string) => gitPost<{ path: string; initialized: boolean }>('/init', { dir }),
   status: (dir: string) => gitPost<GitStatus>('/status', { dir }),

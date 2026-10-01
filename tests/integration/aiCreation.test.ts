@@ -32,7 +32,7 @@ describe('durable AI creation sessions', () => {
     root = await mkdtemp(join(tmpdir(), 'omix-ai-creation-'))
     process.env.DATABASE_URL = `file:${join(root, 'test.db')}`
     const { SchemaVersionManager } = await import('@server/services/versionService')
-    expect(await SchemaVersionManager.runPendingMigrations(resolve('src/server/db/migrations'))).toBe(8)
+    expect(await SchemaVersionManager.runPendingMigrations(resolve('src/server/db/migrations'))).toBe(9)
     const authRouter = (await import('@server/routes/auth')).default
     const aiRouter = (await import('@server/routes/ai')).default
     app = new Hono()

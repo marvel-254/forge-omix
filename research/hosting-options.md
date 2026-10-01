@@ -1,5 +1,7 @@
 # Forge-Omix Hosting Research
 
+> **Deployment update (2026-09-29):** This document records the earlier Node/Docker + LibSQL research. Its Render recommendation is superseded by the current user decision to use Vercel for the frontend and Cloudflare Workers/Hyperdrive for the production API, backed by a dedicated Neon Postgres database. The live Vercel production deployment currently contains only the static frontend; the API and database migration are not complete. See [the production deployment handoff](../docs/production-deployment-handoff.md) for verified status and required work. Do not use or modify either existing `threadmymail` Hyperdrive config.
+
 ## Project Requirements Summary
 
 | Requirement | Detail |
@@ -368,9 +370,11 @@ Since forge-omix uses LibSQL (embedded SQLite), storage is simple:
 
 ## Final Recommendation
 
-### For Forge-Omix V1:
+### Current direction for Forge-Omix production
 
-**Start with Render (free tier)** - it's the simplest, you already know it, and it's free. When you need always-on reliability, upgrade to $7/mo or migrate to Fly.io.
+Use Vercel for the React/Vite frontend and Cloudflare Workers for the API, with a new Cloudflare Hyperdrive config connected to a dedicated Neon Postgres project. This is the user's selected direction, but it is **not yet a complete deployable stack**: the application currently uses embedded LibSQL/SQLite and local Git workspaces. Migrate the database schema, migrations, and workspace storage behavior before directing production traffic to a Worker. The deployed Vercel page is live but editor save currently fails because its bundle targets `http://localhost:3001`.
+
+Do not treat the historical Render comparison below as the current deployment choice. Keep Render/Docker as a fallback for running the existing Node + LibSQL application while the Cloudflare/Hyperdrive migration is being completed.
 
 ### For AI/GPU Features (Future):
 

@@ -16,7 +16,9 @@ const store: RateLimitStore = {}
  */
 export function rateLimit(maxRequests = 100, windowMs = 15 * 60 * 1000) {
   return async (c: Context, next: Next) => {
-    const ip = c.req.header('x-forwarded-for') || c.req.header('x-real-ip') || 'unknown'
+    // X-Real-IP is overwritten by the bundled nginx reverse proxy. Prefer it
+    // over the client-controlled leftmost X-Forwarded-For value.
+    const ip = c.req.header('x-real-ip') || c.req.header('x-forwarded-for') || 'unknown'
     const now = Date.now()
     const key = `ratelimit:${ip}`
 
