@@ -29,7 +29,7 @@ function Grain() {
 
 function Nav() {
   const [open, setOpen] = useState(false)
-  const links = ['Features', 'How it works', 'Install', 'Docs']
+  const links: [string, string][] = [['Features','#features'],['How it works','#how-it-works'],['Install','#install'],['Docs','https://github.com/marvel-254/forge-omix/tree/main/docs']]
   return (
     <header className="sticky top-0 z-40 backdrop-blur-sm bg-alabaster/80 border-b border-stone">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
@@ -37,9 +37,9 @@ function Nav() {
           forge<span className="italic text-sage">@</span>omix
         </a>
         <nav className="hidden items-center gap-8 text-sm tracking-wide md:flex">
-          {links.map((l) => (
-            <a key={l} href={`#${l.toLowerCase().replace(/ /g, '-')}`} className="text-forest/80 transition-colors duration-300 hover:text-terracotta">
-              {l}
+          {links.map(([label, href]) => (
+            <a key={label} href={href} className="text-forest/80 transition-colors duration-300 hover:text-terracotta">
+              {label}
             </a>
           ))}
           <a href="#install" className="rounded-full border border-sage px-5 py-2 text-sage transition-colors duration-300 hover:bg-sage hover:text-white">
@@ -52,9 +52,9 @@ function Nav() {
       </div>
       {open && (
         <nav className="flex flex-col gap-6 border-t border-stone bg-alabaster p-8 text-lg md:hidden">
-          {links.map((l) => (
-            <a key={l} href={`#${l.toLowerCase().replace(/ /g, '-')}`} onClick={() => setOpen(false)}>
-              {l}
+          {links.map(([label, href]) => (
+            <a key={label} href={href} onClick={() => setOpen(false)}>
+              {label}
             </a>
           ))}
         </nav>
@@ -211,8 +211,14 @@ function Install() {
             storage, and starts the app on port 8080.
           </p>
           <p className="mt-6 text-sm text-forest/60">
-            Prefer curl? <code className="rounded-full bg-mushroom px-3 py-1">install.sh</code> does
-            the same without Node.
+            Prefer curl?{' '}
+            <a
+              href="https://raw.githubusercontent.com/marvel-254/forge-omix/main/install.sh"
+              className="rounded-full bg-mushroom px-3 py-1 font-mono transition-colors duration-300 hover:bg-clay"
+            >
+              install.sh
+            </a>{' '}
+            does the same without Node.
           </p>
         </div>
         <div className="rounded-3xl border border-stone bg-forest p-8 text-stone shadow-[0_25px_50px_-12px_rgba(45,58,49,0.15)]">

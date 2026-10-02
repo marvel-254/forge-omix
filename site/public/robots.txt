@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://forge-omix-site.vercel.app/sitemap.xml

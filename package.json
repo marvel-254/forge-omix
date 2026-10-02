@@ -64,9 +64,6 @@
   },
   "description": "AI-native visual software builder. One-command Docker deployment: npm i -g forge-omix",
   "license": "MIT",
-  "bin": {
-    "forge-omix": "bin/forge-omix.js"
-  },
   "files": [
     "bin",
     "README.md",
@@ -81,5 +78,6 @@
     "ai",
     "docker",
     "low-code"
-  ]
+  ],
+  "private": true
 }

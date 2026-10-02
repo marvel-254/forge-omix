@@ -1,0 +1,20 @@
+# forge@omix
+
+> AI-native visual software builder. Design, structure, and ship production applications from a visual canvas. The canvas is a machine-readable project schema — exports real React + Vite projects, supports git workspaces, multi-provider AI, self-hosted Docker deployment.
+
+## Install
+
+- npm: `npm install -g forge-omix` then `forge-omix`
+- One-line installer: `curl -fsSL https://raw.githubusercontent.com/marvel-254/forge-omix/main/install.sh | sh`
+- Dev: `pnpm install && pnpm dev` (client :3000) + `pnpm dev:server` (API :3001)
+
+## Links
+
+- Source: https://github.com/marvel-254/forge-omix
+- Container image: ghcr.io/marvel-254/forge-omix
+- npm CLI: https://www.npmjs.com/package/forge-omix
+
+## Docs
+
+- Architecture, schema contracts, and API: `docs/` in the repository
+- Universal project schema: `schemas/project.schema.json`

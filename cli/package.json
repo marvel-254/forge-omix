@@ -1,0 +1,20 @@
+{
+  "name": "forge-omix",
+  "version": "0.1.0",
+  "description": "AI-native visual software builder — one-command Docker deployment CLI",
+  "license": "MIT",
+  "type": "commonjs",
+  "bin": {
+    "forge-omix": "bin/forge-omix.js"
+  },
+  "files": ["bin", "README.md"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/marvel-254/forge-omix.git",
+    "directory": "cli"
+  },
+  "keywords": ["visual-builder", "ai", "docker", "low-code", "self-hosted"],
+  "engines": {
+    "node": ">=18"
+  }
+}
