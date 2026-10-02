@@ -14,6 +14,7 @@ import {
   reassembleProject,
   type ServerProjectPayload,
 } from '../services/projectService'
+import { generateSiteArchive, canRunInlineBuild } from '../services/buildService'
 
 const router = new Hono<AuthEnv>()
 router.use('*', authMiddleware())
@@ -129,6 +130,30 @@ router.delete('/:id', async (c) => {
     return createApiResponse(c, deletedProject)
   } catch (error) {
     return createErrorResponse(c, 'DATABASE_ERROR', 'Failed to delete project')
+  }
+})
+
+/** Export a saved project as a deployable source archive (zip). */
+router.post('/:id/export', async (c) => {
+  try {
+    const project = await reassembleProject(c.req.param('id'), accountId(c))
+    if (!project) return createErrorResponse(c, 'NOT_FOUND', 'Project not found', undefined, 404)
+    const result = await generateSiteArchive(project, { runBuild: false })
+    return createApiResponse(c, result)
+  } catch (error) {
+    return createErrorResponse(c, 'BUILD_FAILED', 'Failed to export project')
+  }
+})
+
+/** Build a saved project and return a production-ready archive (zip with dist/). */
+router.post('/:id/build', async (c) => {
+  try {
+    const project = await reassembleProject(c.req.param('id'), accountId(c))
+    if (!project) return createErrorResponse(c, 'NOT_FOUND', 'Project not found', undefined, 404)
+    const result = await generateSiteArchive(project, { runBuild: canRunInlineBuild() })
+    return createApiResponse(c, result)
+  } catch (error) {
+    return createErrorResponse(c, 'BUILD_FAILED', 'Failed to build project')
   }
 })
 

@@ -55,6 +55,15 @@ COPY nginx.conf /etc/nginx/nginx.conf
 # Create data directory
 RUN mkdir -p /data/projects /data/templates /data/exports
 
+# Sensible defaults so the image works out-of-the-box with a bare `docker run`.
+# docker-compose / the installer override these (persistent volume, cloud AI keys).
+ENV PORT=3001
+ENV NODE_ENV=production
+ENV DATABASE_URL=file:/data/forge.db
+ENV GIT_WORKSPACES=/data/workspaces
+ENV AI_MODE=mock
+ENV FORGE_RUN_BUILD=
+
 # Expose port
 EXPOSE 8080
 
