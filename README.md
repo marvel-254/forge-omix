@@ -57,6 +57,17 @@ Omix Builder is not a mockup tool. The visual canvas is a structured, machine-re
 - [ ] Phase 12 — Testing
 - [ ] Phase 13 — Beta
 
+## Quick Install (npm)
+
+```sh
+npm install -g forge-omix
+forge-omix
+```
+
+The CLI installs Docker when missing (Linux), pulls the pre-built image,
+provisions `~/.forge-omix` and starts the app. Subcommands: `forge-omix stop`,
+`forge-omix logs`, `forge-omix update`.
+
 ## Quick Install (Docker)
 
 Run forge@omix with one command — the installer pulls the pre-built image,
