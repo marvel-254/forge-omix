@@ -1,6 +1,6 @@
 {
   "name": "forge-omix",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -61,5 +61,25 @@
     "vite": "^6.0.0",
     "vitest": "^3.0.0",
     "@tailwindcss/vite": "^4.0.0"
-  }
+  },
+  "description": "AI-native visual software builder. One-command Docker deployment: npm i -g forge-omix",
+  "license": "MIT",
+  "bin": {
+    "forge-omix": "bin/forge-omix.js"
+  },
+  "files": [
+    "bin",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/marvel-254/forge-omix.git"
+  },
+  "keywords": [
+    "visual-builder",
+    "ai",
+    "docker",
+    "low-code"
+  ]
 }
