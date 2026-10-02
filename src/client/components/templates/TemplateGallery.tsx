@@ -61,7 +61,7 @@ export function TemplateGallery({
           <Button size="sm" variant="ghost" onClick={onBack} aria-label="Back to start">
             ←
           </Button>
-          <h2 className="text-lg font-semibold tracking-tight text-neutral-900">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
             Start from a template
           </h2>
         </div>
@@ -71,14 +71,14 @@ export function TemplateGallery({
               key={template.id}
               type="button"
               onClick={() => select(template)}
-              className="rounded-lg border border-neutral-200 bg-white p-3 text-left transition-colors hover:border-primary-300 hover:bg-primary-50/50"
+              className="rounded-lg border border-border bg-card p-3 text-left transition-colors hover:border-primary-300 hover:bg-primary-50/50"
             >
-              <span className="block text-sm font-medium text-neutral-900">{template.name}</span>
-              <span className="mt-0.5 block text-xs leading-relaxed text-neutral-500">
+              <span className="block text-sm font-medium text-foreground">{template.name}</span>
+              <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground">
                 {template.description}
               </span>
               {template.variables.length > 0 && (
-                <span className="mt-1 block text-xs text-neutral-400">
+                <span className="mt-1 block text-xs text-muted-foreground">
                   {template.variables.length} option{template.variables.length === 1 ? '' : 's'} to
                   configure
                 </span>
@@ -97,12 +97,12 @@ export function TemplateGallery({
           ←
         </Button>
         <div>
-          <h2 className="text-lg font-semibold tracking-tight text-neutral-900">{selected.name}</h2>
-          <p className="text-xs text-neutral-500">{selected.description}</p>
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">{selected.name}</h2>
+          <p className="text-xs text-muted-foreground">{selected.description}</p>
         </div>
       </div>
       {selected.variables.length === 0 ? (
-        <p className="mb-4 text-sm text-neutral-500">
+        <p className="mb-4 text-sm text-muted-foreground">
           No options to configure — create the project directly.
         </p>
       ) : (
@@ -150,7 +150,7 @@ function VariableInput({
   const hint = variable.description ?? variable.type
   if (variable.type === 'boolean') {
     return (
-      <label className="flex cursor-pointer items-center gap-2 text-sm text-neutral-700">
+      <label className="flex cursor-pointer items-center gap-2 text-sm text-foreground/80">
         <input
           type="checkbox"
           checked={value === true}
@@ -159,7 +159,7 @@ function VariableInput({
         />
         <span>
           {variable.name}
-          <span className="ml-1 text-xs text-neutral-400">{hint}</span>
+          <span className="ml-1 text-xs text-muted-foreground">{hint}</span>
         </span>
         {error && <span className="text-xs text-red-600">{error}</span>}
       </label>
@@ -179,7 +179,7 @@ function VariableInput({
           }}
           error={error}
         />
-        <p className="mt-0.5 text-xs text-neutral-400">{hint}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p>
       </div>
     )
   }
@@ -193,7 +193,7 @@ function VariableInput({
             type="color"
             value={/^#[0-9a-fA-F]{6}$/.test(text) ? text : '#3b82f6'}
             onChange={(e) => onChange(e.target.value)}
-            className="h-10 w-12 cursor-pointer rounded-md border border-neutral-300 bg-white p-1"
+            className="h-10 w-12 cursor-pointer rounded-md border border-border bg-card p-1"
             aria-label={`${variable.name} color picker`}
           />
           <input
@@ -204,7 +204,7 @@ function VariableInput({
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
         </div>
-        <p className="mt-0.5 text-xs text-neutral-400">{hint}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p>
         {error && <p className="text-xs text-red-600">{error}</p>}
       </div>
     )
@@ -224,9 +224,9 @@ function VariableInput({
               onChange(e.target.value)
             }
           }}
-          className="w-full rounded-md border border-neutral-300 bg-white px-2 py-1.5 font-mono text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="w-full rounded-md border border-border bg-card px-2 py-1.5 font-mono text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         />
-        <p className="mt-0.5 text-xs text-neutral-400">{hint}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p>
         {error && <p className="text-xs text-red-600">{error}</p>}
       </div>
     )
@@ -240,7 +240,7 @@ function VariableInput({
         onChange={(e) => onChange(e.target.value)}
         error={error}
       />
-      <p className="mt-0.5 text-xs text-neutral-400">{hint}</p>
+      <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p>
     </div>
   )
 }

@@ -37,11 +37,11 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   render(): React.ReactNode {
     if (this.state.error) {
       return (
-        <div className="flex flex-1 flex-col items-center justify-center bg-neutral-50 px-4 py-10 text-center">
+        <div className="flex flex-1 flex-col items-center justify-center bg-muted px-4 py-10 text-center">
           <p className="text-sm font-medium text-neutral-800">
             Something went wrong{this.props.area ? ` in the ${this.props.area}` : ''}
           </p>
-          <p className="mt-1 max-w-sm text-xs leading-relaxed text-neutral-500">
+          <p className="mt-1 max-w-sm text-xs leading-relaxed text-muted-foreground">
             Your project data is safe — this only affected the display. Try again, or reload the
             page if it keeps happening.
           </p>

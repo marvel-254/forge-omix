@@ -22,7 +22,7 @@ export function Copyable({ text, onCopied, className, children }: CopyableProps)
     <button
       onClick={handleCopy}
       className={cn(
-        'inline-flex items-center gap-2 px-3 py-2 rounded text-sm border border-neutral-300 hover:bg-neutral-50 transition-colors',
+        'inline-flex items-center gap-2 px-3 py-2 rounded text-sm border border-border hover:bg-muted transition-colors',
         className
       )}
     >

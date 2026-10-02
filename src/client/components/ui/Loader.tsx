@@ -25,7 +25,7 @@ export function Loader({
         <div
           className={cn(
             sizeVariants[size],
-            'border-3 border-neutral-200 border-t-blue-600 rounded-full animate-spin'
+            'border-3 border-border border-t-blue-600 rounded-full animate-spin'
           )}
         />
       )}
@@ -50,7 +50,7 @@ export function Loader({
           className={cn(sizeVariants[size], 'rounded-full bg-blue-600 animate-pulse')}
         />
       )}
-      {label && <p className="text-sm text-neutral-600">{label}</p>}
+      {label && <p className="text-sm text-muted-foreground">{label}</p>}
     </div>
   )
 }

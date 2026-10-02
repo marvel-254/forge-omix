@@ -23,7 +23,7 @@ export function Breadcrumb({
     <nav className={cn('flex items-center gap-2 text-sm', className)}>
       {items.map((item, index) => (
         <div key={index} className="flex items-center gap-2">
-          {index > 0 && <span className="text-neutral-400">{separator}</span>}
+          {index > 0 && <span className="text-muted-foreground">{separator}</span>}
           {item.href || item.onClick ? (
             <a
               href={item.href}
@@ -35,7 +35,7 @@ export function Breadcrumb({
               }}
               className={cn(
                 'hover:text-blue-600 transition-colors',
-                item.active ? 'text-neutral-900 font-medium' : 'text-neutral-600'
+                item.active ? 'text-foreground font-medium' : 'text-muted-foreground'
               )}
             >
               {item.label}
@@ -43,7 +43,7 @@ export function Breadcrumb({
           ) : (
             <span
               className={cn(
-                item.active ? 'text-neutral-900 font-medium' : 'text-neutral-600'
+                item.active ? 'text-foreground font-medium' : 'text-muted-foreground'
               )}
             >
               {item.label}

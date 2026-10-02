@@ -48,7 +48,7 @@ export function FileInput({
   return (
     <div className={cn(className)}>
       {label && (
-        <label htmlFor={id} className="block text-sm font-medium text-neutral-700 mb-2">
+        <label htmlFor={id} className="block text-sm font-medium text-foreground/80 mb-2">
           {label}
           {required && <span className="text-red-600 ml-1">*</span>}
         </label>
@@ -62,7 +62,7 @@ export function FileInput({
           'border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer',
           dragActive
             ? 'border-blue-500 bg-blue-50'
-            : 'border-neutral-300 hover:border-neutral-400'
+            : 'border-border hover:border-border'
         )}
         onClick={() => inputRef.current?.click()}
       >
@@ -77,9 +77,9 @@ export function FileInput({
           className="hidden"
           id={id}
         />
-        <div className="text-neutral-600">
+        <div className="text-muted-foreground">
           <p className="font-medium">Drop files here or click to select</p>
-          {accept && <p className="text-xs text-neutral-500 mt-1">{accept}</p>}
+          {accept && <p className="text-xs text-muted-foreground mt-1">{accept}</p>}
         </div>
       </div>
     </div>

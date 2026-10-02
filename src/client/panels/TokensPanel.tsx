@@ -87,8 +87,8 @@ export function TokensPanel() {
   if (!project) {
     return (
       <div className="flex flex-col items-center px-4 py-10 text-center">
-        <p className="text-sm font-medium text-neutral-600">No project open</p>
-        <p className="mt-1 text-xs text-neutral-400">Create a project to edit its design tokens.</p>
+        <p className="text-sm font-medium text-muted-foreground">No project open</p>
+        <p className="mt-1 text-xs text-muted-foreground">Create a project to edit its design tokens.</p>
       </div>
     )
   }
@@ -96,7 +96,7 @@ export function TokensPanel() {
   return (
     <div className="space-y-5 p-3 text-sm" data-testid="tokens-panel">
       <section className="space-y-2">
-        <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Colors</h4>
+        <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Colors</h4>
         {COLOR_ROLES.map((role) => {
           const value = tokens.colors[role] ?? ''
           return (
@@ -104,7 +104,7 @@ export function TokensPanel() {
               <span
                 aria-hidden
                 title={value || 'Not set (default)'}
-                className="h-6 w-6 shrink-0 rounded-md border border-neutral-300"
+                className="h-6 w-6 shrink-0 rounded-md border border-border"
                 style={{
                   background:
                     value ||
@@ -129,7 +129,7 @@ export function TokensPanel() {
       </section>
 
       <section className="space-y-2">
-        <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Shadows</h4>
+        <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Shadows</h4>
         {SHADOW_SLOTS.map((slot) => (
           <div key={slot} data-testid={`token-shadow-${slot}`}>
             <Input
@@ -146,13 +146,13 @@ export function TokensPanel() {
             />
           </div>
         ))}
-        <p className="text-xs text-neutral-400">
+        <p className="text-xs text-muted-foreground">
           sm/md/lg drive card elevation levels 1–3 on the canvas.
         </p>
       </section>
 
       <section className="space-y-2">
-        <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Typography</h4>
+        <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Typography</h4>
         <Input
           label="Font family (sans)"
           value={tokens.typography.sans ?? ''}

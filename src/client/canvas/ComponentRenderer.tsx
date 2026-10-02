@@ -94,7 +94,7 @@ export function ComponentRenderer({
         onSelect(component.id)
       }}
     >
-      <pre className="text-xs bg-white border rounded p-2 shadow-sm max-w-full overflow-hidden">
+      <pre className="text-xs bg-card border rounded p-2 shadow-sm max-w-full overflow-hidden">
         {JSON.stringify({ type: component.type, ...resolvedProps }, null, 2)}
       </pre>
     </div>

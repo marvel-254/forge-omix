@@ -42,9 +42,9 @@ function AssetFields({
 }) {
   const prefix = `ai-${kind}`
   return (
-    <fieldset className="rounded-lg border border-neutral-200 p-3">
+    <fieldset className="rounded-lg border border-border p-3">
       <legend className="px-1 text-sm font-medium text-neutral-800">{legend}</legend>
-      <p className="mb-3 text-xs text-neutral-500">Optional metadata only; no file is uploaded.</p>
+      <p className="mb-3 text-xs text-muted-foreground">Optional metadata only; no file is uploaded.</p>
       <div className="space-y-3">
         <Input
           id={`${prefix}-name`}
@@ -123,22 +123,22 @@ function ReviewContent({ state }: { state: AiCreationState }) {
         <p className="mt-1 text-sm leading-relaxed text-primary-950">{brief.summary}</p>
       </div>
       <dl className="grid gap-3 text-sm sm:grid-cols-[9rem_1fr]">
-        <dt className="font-medium text-neutral-600">Project name</dt>
-        <dd className="text-neutral-900">{brief.projectName}</dd>
-        <dt className="font-medium text-neutral-600">Audience</dt>
-        <dd className="text-neutral-900">{brief.audience || 'Not specified'}</dd>
-        <dt className="font-medium text-neutral-600">Primary goal</dt>
-        <dd className="text-neutral-900">{brief.primaryGoal || 'Not specified'}</dd>
-        <dt className="font-medium text-neutral-600">Pages</dt>
-        <dd className="text-neutral-900">{brief.keyPages || 'To be decided'}</dd>
-        <dt className="font-medium text-neutral-600">Visual direction</dt>
-        <dd className="text-neutral-900">{brief.visualDirection || 'To be decided'}</dd>
-        <dt className="font-medium text-neutral-600">Logo metadata</dt>
-        <dd className="text-neutral-900">{brief.assets.logo?.name || brief.assets.logo?.url || 'None'}</dd>
-        <dt className="font-medium text-neutral-600">Photo metadata</dt>
-        <dd className="text-neutral-900">{brief.assets.photo?.name || brief.assets.photo?.url || 'None'}</dd>
+        <dt className="font-medium text-muted-foreground">Project name</dt>
+        <dd className="text-foreground">{brief.projectName}</dd>
+        <dt className="font-medium text-muted-foreground">Audience</dt>
+        <dd className="text-foreground">{brief.audience || 'Not specified'}</dd>
+        <dt className="font-medium text-muted-foreground">Primary goal</dt>
+        <dd className="text-foreground">{brief.primaryGoal || 'Not specified'}</dd>
+        <dt className="font-medium text-muted-foreground">Pages</dt>
+        <dd className="text-foreground">{brief.keyPages || 'To be decided'}</dd>
+        <dt className="font-medium text-muted-foreground">Visual direction</dt>
+        <dd className="text-foreground">{brief.visualDirection || 'To be decided'}</dd>
+        <dt className="font-medium text-muted-foreground">Logo metadata</dt>
+        <dd className="text-foreground">{brief.assets.logo?.name || brief.assets.logo?.url || 'None'}</dd>
+        <dt className="font-medium text-muted-foreground">Photo metadata</dt>
+        <dd className="text-foreground">{brief.assets.photo?.name || brief.assets.photo?.url || 'None'}</dd>
       </dl>
-      <p className="text-xs leading-relaxed text-neutral-500">
+      <p className="text-xs leading-relaxed text-muted-foreground">
         The server will generate the project when you submit. If the server is unavailable, a local
         starter will be used without claiming AI generation succeeded.
       </p>
@@ -300,14 +300,14 @@ export function AIProjectCreationWizard({
       role="dialog"
       aria-modal="true"
       aria-labelledby="ai-project-wizard-title"
-      className="flex h-full min-h-0 w-full flex-col bg-white"
+      className="flex h-full min-h-0 w-full flex-col bg-card"
     >
-      <div className="flex items-start justify-between gap-4 border-b border-neutral-200 px-5 py-4">
+      <div className="flex items-start justify-between gap-4 border-b border-border px-5 py-4">
         <div>
-          <h2 id="ai-project-wizard-title" className="text-base font-semibold text-neutral-900">
+          <h2 id="ai-project-wizard-title" className="text-base font-semibold text-foreground">
             Create a project from a brief
           </h2>
-          <p className="mt-1 text-xs text-neutral-500">Prepare a project in a few short steps.</p>
+          <p className="mt-1 text-xs text-muted-foreground">Prepare a project in a few short steps.</p>
         </div>
         <Button type="button" size="sm" variant="ghost" onClick={onCancel} aria-label="Close project wizard">
           ✕
@@ -326,13 +326,13 @@ export function AIProjectCreationWizard({
                     ? 'bg-emerald-100 text-emerald-800'
                     : active
                       ? 'bg-primary-500 text-white'
-                      : 'bg-neutral-100 text-neutral-500'
+                      : 'bg-accent text-muted-foreground'
                 }`}
                 aria-hidden="true"
               >
                 {complete ? '✓' : index + 1}
               </span>
-              <span className={`truncate text-xs ${active ? 'font-medium text-neutral-900' : 'text-neutral-500'}`}>
+              <span className={`truncate text-xs ${active ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
                 {step.label}
               </span>
             </li>
@@ -341,13 +341,13 @@ export function AIProjectCreationWizard({
       </ol>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
-        {resuming && <p className="mb-4 text-xs text-neutral-500">Resuming creation session…</p>}
+        {resuming && <p className="mb-4 text-xs text-muted-foreground">Resuming creation session…</p>}
 
         {state.step === 'brief' && (
           <div className="space-y-4">
             <div>
-              <h3 className="text-sm font-semibold text-neutral-900">Describe what you want to build</h3>
-              <p className="mt-1 text-sm leading-relaxed text-neutral-500">
+              <h3 className="text-sm font-semibold text-foreground">Describe what you want to build</h3>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                 Use plain language. You can refine the details on the next steps.
               </p>
             </div>
@@ -375,8 +375,8 @@ export function AIProjectCreationWizard({
         {state.step === 'clarify' && (
           <div className="space-y-4">
             <div>
-              <h3 className="text-sm font-semibold text-neutral-900">A few details</h3>
-              <p className="mt-1 text-sm leading-relaxed text-neutral-500">
+              <h3 className="text-sm font-semibold text-foreground">A few details</h3>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                 Short answers are enough. Leave any field blank to decide later.
               </p>
             </div>
@@ -390,8 +390,8 @@ export function AIProjectCreationWizard({
         {state.step === 'assets' && (
           <div className="space-y-4">
             <div>
-              <h3 className="text-sm font-semibold text-neutral-900">Add brand assets</h3>
-              <p className="mt-1 text-sm leading-relaxed text-neutral-500">
+              <h3 className="text-sm font-semibold text-foreground">Add brand assets</h3>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                 Capture references now so the brief keeps the visual context. Uploads are not part of this step.
               </p>
             </div>
@@ -420,7 +420,7 @@ export function AIProjectCreationWizard({
       </div>
 
       {state.status !== 'complete' && (
-        <div className="flex items-center justify-between gap-2 border-t border-neutral-200 px-5 py-3">
+        <div className="flex items-center justify-between gap-2 border-t border-border px-5 py-3">
           <Button
             type="button"
             size="sm"
@@ -451,7 +451,7 @@ export function AIProjectCreationWizard({
       )}
 
       {state.status === 'complete' && (
-        <div className="flex items-center justify-between border-t border-neutral-200 px-5 py-3">
+        <div className="flex items-center justify-between border-t border-border px-5 py-3">
           <p role="status" className="text-sm text-emerald-700">
             {state.error ? 'Local starter project ready.' : 'Generated project ready.'}
           </p>

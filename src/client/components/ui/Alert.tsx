@@ -17,8 +17,8 @@ interface AlertProps {
 
 const variantStyles = {
   default: {
-    container: 'bg-neutral-50 border border-neutral-200 text-neutral-900',
-    icon: 'text-neutral-600',
+    container: 'bg-muted border border-border text-foreground',
+    icon: 'text-muted-foreground',
   },
   success: {
     container: 'bg-green-50 border border-green-200 text-green-900',

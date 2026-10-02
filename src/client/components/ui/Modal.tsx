@@ -15,7 +15,7 @@ const modalVariants = cva('fixed inset-0 z-50 bg-black/50 flex items-center just
 })
 
 const contentVariants = cva(
-  'bg-white rounded-lg shadow-lg max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto',
+  'bg-card rounded-lg shadow-lg max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto',
   {
     variants: {
       size: {
@@ -73,16 +73,16 @@ export function Modal({
       >
         {/* Header */}
         {(title || closeButton) && (
-          <div className="flex items-center justify-between border-b border-neutral-200 p-6">
+          <div className="flex items-center justify-between border-b border-border p-6">
             <div>
-              {title && <h2 id={titleId} className="text-lg font-semibold text-neutral-900">{title}</h2>}
-              {description && <p id={descriptionId} className="text-sm text-neutral-500 mt-1">{description}</p>}
+              {title && <h2 id={titleId} className="text-lg font-semibold text-foreground">{title}</h2>}
+              {description && <p id={descriptionId} className="text-sm text-muted-foreground mt-1">{description}</p>}
             </div>
             {closeButton && (
               <button
                 type="button"
                 onClick={onClose}
-                className="text-neutral-400 hover:text-neutral-600 text-2xl leading-none"
+                className="text-muted-foreground hover:text-muted-foreground text-2xl leading-none"
                 aria-label="Close modal"
               >
                 ×
@@ -95,7 +95,7 @@ export function Modal({
         <div className="p-6">{children}</div>
 
         {/* Footer */}
-        {actions && <div className="flex gap-3 justify-end border-t border-neutral-200 p-6">{actions}</div>}
+        {actions && <div className="flex gap-3 justify-end border-t border-border p-6">{actions}</div>}
       </div>
     </div>
   )

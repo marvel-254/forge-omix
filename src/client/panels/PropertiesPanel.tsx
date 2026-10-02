@@ -49,7 +49,7 @@ interface FieldDef {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
-      <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">{title}</h4>
+      <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</h4>
       {children}
     </div>
   )
@@ -73,14 +73,14 @@ function FieldControl({
     const match = def.options.find((o) => String(o.value) === String(value ?? ''))
     return (
       <div className="space-y-1">
-        <label className="block text-xs font-medium text-neutral-600">{label}</label>
+        <label className="block text-xs font-medium text-muted-foreground">{label}</label>
         <select
           value={match ? String(match.value) : ''}
           onChange={(e) => {
             const opt = def.options?.find((o) => String(o.value) === e.target.value)
             if (opt) onChange(opt.value)
           }}
-          className="w-full rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="w-full rounded-md border border-border bg-card px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {def.options.map((o) => (
             <option key={String(o.value)} value={String(o.value)}>
@@ -110,12 +110,12 @@ function FieldControl({
   if (def.type === 'textarea') {
     return (
       <div className="space-y-1">
-        <label className="block text-xs font-medium text-neutral-600">{label}</label>
+        <label className="block text-xs font-medium text-muted-foreground">{label}</label>
         <textarea
           value={typeof value === 'string' ? value : ''}
           rows={3}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="w-full rounded-md border border-border bg-card px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         />
       </div>
     )
@@ -160,18 +160,18 @@ function ArrayFieldEditor({
 
   return (
     <div className="space-y-1.5">
-      <label className="block text-xs font-medium text-neutral-600">{label}</label>
+      <label className="block text-xs font-medium text-muted-foreground">{label}</label>
       {rows.map((row, index) => (
-        <div key={index} className="rounded-md border border-neutral-200 p-2">
+        <div key={index} className="rounded-md border border-border p-2">
           <div className="mb-1 flex items-center justify-between">
-            <span className="text-xs font-medium text-neutral-500">
+            <span className="text-xs font-medium text-muted-foreground">
               {def.getItemSummary?.(row) ?? `Item ${index + 1}`}
             </span>
             <button
               type="button"
               aria-label={`Remove row ${index + 1}`}
               onClick={() => onChange(rows.filter((_, i) => i !== index))}
-              className="rounded px-1 text-xs text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700"
+              className="rounded px-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground/80"
             >
               ✕
             </button>
@@ -226,7 +226,7 @@ function FieldJson({
   }, [label])
   return (
     <div className="space-y-1">
-      <label className="block text-xs font-medium text-neutral-600">{label} (JSON)</label>
+      <label className="block text-xs font-medium text-muted-foreground">{label} (JSON)</label>
       <textarea
         value={text}
         rows={Math.min(8, Math.max(3, text.split('\n').length))}
@@ -240,8 +240,8 @@ function FieldJson({
             setError('Invalid JSON — not saved')
           }
         }}
-        className={`w-full rounded-md border bg-white px-2 py-1.5 font-mono text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-          error ? 'border-red-400' : 'border-neutral-300'
+        className={`w-full rounded-md border bg-card px-2 py-1.5 font-mono text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+          error ? 'border-red-400' : 'border-border'
         }`}
       />
       {error && <p className="text-xs text-red-600">{error}</p>}
@@ -278,13 +278,13 @@ function KeyValueRows({
               next[nextKey] = val
               onChange(next)
             }}
-            className="w-1/2 rounded-md border border-neutral-300 bg-white px-2 py-1 font-mono text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="w-1/2 rounded-md border border-border bg-card px-2 py-1 font-mono text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
           <input
             value={String(val)}
             aria-label={`Value for ${key}`}
             onChange={(e) => onChange({ ...values, [key]: e.target.value })}
-            className="w-1/2 rounded-md border border-neutral-300 bg-white px-2 py-1 font-mono text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="w-1/2 rounded-md border border-border bg-card px-2 py-1 font-mono text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
           <Button
             variant="ghost"
@@ -306,7 +306,7 @@ function KeyValueRows({
           placeholder={keyPlaceholder}
           aria-label="New property name"
           onChange={(e) => setNewKey(e.target.value)}
-          className="w-1/2 rounded-md border border-dashed border-neutral-300 bg-white px-2 py-1 font-mono text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="w-1/2 rounded-md border border-dashed border-border bg-card px-2 py-1 font-mono text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         />
         <input
           value={newValue}
@@ -320,7 +320,7 @@ function KeyValueRows({
               setNewValue('')
             }
           }}
-          className="w-1/2 rounded-md border border-dashed border-neutral-300 bg-white px-2 py-1 font-mono text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="w-1/2 rounded-md border border-dashed border-border bg-card px-2 py-1 font-mono text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         />
         <Button
           variant="ghost"
@@ -379,11 +379,11 @@ export function PropertiesPanel() {
   if (!component) {
     return (
       <div className="flex flex-col items-center px-4 py-10 text-center">
-        <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-lg bg-neutral-100 text-base text-neutral-400">
+        <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-base text-muted-foreground">
           ◈
         </div>
-        <p className="text-sm font-medium text-neutral-600">No component selected</p>
-        <p className="mt-1 text-xs leading-relaxed text-neutral-400">
+        <p className="text-sm font-medium text-muted-foreground">No component selected</p>
+        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
           Select a component on the canvas to edit its properties.
         </p>
       </div>
@@ -428,7 +428,7 @@ export function PropertiesPanel() {
           <span className="inline-block rounded-full bg-primary-100 px-2 py-0.5 text-xs font-medium text-primary-800">
             {component.type}
           </span>
-          <span className="max-w-[120px] truncate text-xs text-neutral-400">{component.id}</span>
+          <span className="max-w-[120px] truncate text-xs text-muted-foreground">{component.id}</span>
         </div>
         <Input
           label="Name"
@@ -446,14 +446,14 @@ export function PropertiesPanel() {
             const match = def.options.find((o) => String(o.value) === String(current ?? ''))
             return (
               <div key={fieldName} className="space-y-1">
-                <label className="block text-xs font-medium text-neutral-600">{label}</label>
+                <label className="block text-xs font-medium text-muted-foreground">{label}</label>
                 <select
                   value={match ? String(match.value) : ''}
                   onChange={(e) => {
                     const opt = def.options?.find((o) => String(o.value) === e.target.value)
                     if (opt) setProps({ [fieldName]: opt.value })
                   }}
-                  className="w-full rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="w-full rounded-md border border-border bg-card px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {def.options.map((o) => (
                     <option key={String(o.value)} value={String(o.value)}>
@@ -484,12 +484,12 @@ export function PropertiesPanel() {
           if (def.type === 'textarea') {
             return (
               <div key={fieldName} className="space-y-1">
-                <label className="block text-xs font-medium text-neutral-600">{label}</label>
+                <label className="block text-xs font-medium text-muted-foreground">{label}</label>
                 <textarea
                   value={typeof current === 'string' ? current : ''}
                   rows={3}
                   onChange={(e) => setProps({ [fieldName]: e.target.value })}
-                  className="w-full rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="w-full rounded-md border border-border bg-card px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </div>
             )
@@ -522,7 +522,7 @@ export function PropertiesPanel() {
                   value: current,
                   onChange: (v) => setProps({ [fieldName]: v }),
                   Label: ({ label: labelText }: { label?: React.ReactNode }) => (
-                    <label className="block text-xs font-medium text-neutral-600">{labelText}</label>
+                    <label className="block text-xs font-medium text-muted-foreground">{labelText}</label>
                   ),
                   label,
                 })}
@@ -542,7 +542,7 @@ export function PropertiesPanel() {
 
       <Section title="Styles">
         <KeyValueRows values={baseStyles} onChange={setBaseStyles} />
-        <p className="text-xs text-neutral-400">
+        <p className="text-xs text-muted-foreground">
           Base styles apply on canvas; values may use {'$ref'} token pointers.
         </p>
       </Section>
@@ -563,21 +563,21 @@ export function PropertiesPanel() {
             )
           }
           return (
-            <div key={event} className="space-y-1.5 rounded-md border border-neutral-200 p-2">
+            <div key={event} className="space-y-1.5 rounded-md border border-border p-2">
               <div className="flex items-center justify-between">
-                <span className="font-mono text-xs font-medium text-neutral-700">{event}</span>
+                <span className="font-mono text-xs font-medium text-foreground/80">{event}</span>
                 <Button variant="ghost" size="sm" aria-label={`Remove ${event}`} onClick={() => setInteraction(event, undefined)}>
                   ✕
                 </Button>
               </div>
               <div className="space-y-1">
-                <label className="block text-xs font-medium text-neutral-600">Action</label>
+                <label className="block text-xs font-medium text-muted-foreground">Action</label>
                 <select
                   value={typeof handler.type === 'string' ? handler.type : 'navigate'}
                   onChange={(e) =>
                     setInteraction(event, { ...handler, type: e.target.value })
                   }
-                  className="w-full rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="w-full rounded-md border border-border bg-card px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {INTERACTION_TYPES.map((t) => (
                     <option key={t} value={t}>
@@ -593,13 +593,13 @@ export function PropertiesPanel() {
                 onChange={(e) => setInteraction(event, { ...handler, target: e.target.value })}
               />
               <div className="space-y-1">
-                <label className="block text-xs font-medium text-neutral-600">Method</label>
+                <label className="block text-xs font-medium text-muted-foreground">Method</label>
                 <select
                   value={typeof handler.method === 'string' ? handler.method : 'GET'}
                   onChange={(e) =>
                     setInteraction(event, { ...handler, method: e.target.value })
                   }
-                  className="w-full rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="w-full rounded-md border border-border bg-card px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {HTTP_METHODS.map((m) => (
                     <option key={m} value={m}>
@@ -615,10 +615,10 @@ export function PropertiesPanel() {
 
       <Section title="Responsive">
         {responsive.length === 0 && (
-          <p className="text-xs text-neutral-400">No overrides. Components render the same at every viewport.</p>
+          <p className="text-xs text-muted-foreground">No overrides. Components render the same at every viewport.</p>
         )}
         {responsive.map((entry, index) => (
-          <div key={`${String(entry.breakpoint)}:${index}`} className="space-y-1.5 rounded-md border border-neutral-200 p-2">
+          <div key={`${String(entry.breakpoint)}:${index}`} className="space-y-1.5 rounded-md border border-border p-2">
             <div className="flex items-center gap-2">
               <select
                 value={typeof entry.breakpoint === 'string' ? entry.breakpoint : 'md'}
@@ -628,7 +628,7 @@ export function PropertiesPanel() {
                   next[index] = { ...entry, breakpoint: e.target.value }
                   setResponsive(next)
                 }}
-                className="flex-1 rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex-1 rounded-md border border-border bg-card px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {BREAKPOINTS.map((b) => (
                   <option key={b} value={b}>
@@ -636,7 +636,7 @@ export function PropertiesPanel() {
                   </option>
                 ))}
               </select>
-              <label className="flex items-center gap-1 text-xs text-neutral-600">
+              <label className="flex items-center gap-1 text-xs text-muted-foreground">
                 <input
                   type="checkbox"
                   checked={entry.hidden === true}

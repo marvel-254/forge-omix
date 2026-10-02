@@ -45,7 +45,7 @@ export function FeedbackWidget() {
           setSent(false)
           setError(null)
         }}
-        className="fixed bottom-4 right-4 z-[90] rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-xs font-medium text-neutral-600 shadow-md transition-colors hover:bg-neutral-50"
+        className="fixed bottom-4 right-4 z-[90] rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-md transition-colors hover:bg-muted"
       >
         Feedback
       </button>
@@ -56,13 +56,13 @@ export function FeedbackWidget() {
           role="presentation"
         >
           <div
-            className="w-full max-w-md rounded-xl bg-white p-5 shadow-xl"
+            className="w-full max-w-md rounded-xl bg-card p-5 shadow-xl"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
             aria-label="Send feedback"
           >
-            <h2 className="mb-3 text-base font-semibold tracking-tight text-neutral-900">
+            <h2 className="mb-3 text-base font-semibold tracking-tight text-foreground">
               Send feedback
             </h2>
             {sent ? (
@@ -78,14 +78,14 @@ export function FeedbackWidget() {
               <>
                 <div className="space-y-3">
                   <div className="space-y-1">
-                    <label className="block text-xs font-medium text-neutral-600" htmlFor="feedback-kind">
+                    <label className="block text-xs font-medium text-muted-foreground" htmlFor="feedback-kind">
                       Type
                     </label>
                     <select
                       id="feedback-kind"
                       value={kind}
                       onChange={(e) => setKind(e.target.value)}
-                      className="w-full rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="w-full rounded-md border border-border bg-card px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <option value="bug">Bug report</option>
                       <option value="idea">Feature idea</option>
@@ -94,7 +94,7 @@ export function FeedbackWidget() {
                     </select>
                   </div>
                   <div className="space-y-1">
-                    <label className="block text-xs font-medium text-neutral-600" htmlFor="feedback-message">
+                    <label className="block text-xs font-medium text-muted-foreground" htmlFor="feedback-message">
                       Message
                     </label>
                     <textarea
@@ -104,11 +104,11 @@ export function FeedbackWidget() {
                       maxLength={2000}
                       placeholder="What happened, or what would you like to see?"
                       onChange={(e) => setMessage(e.target.value)}
-                      className="w-full rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="w-full rounded-md border border-border bg-card px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="block text-xs font-medium text-neutral-600" htmlFor="feedback-contact">
+                    <label className="block text-xs font-medium text-muted-foreground" htmlFor="feedback-contact">
                       Contact (optional)
                     </label>
                     <input
@@ -116,7 +116,7 @@ export function FeedbackWidget() {
                       value={contact}
                       placeholder="Email or handle, if you want a reply"
                       onChange={(e) => setContact(e.target.value)}
-                      className="h-10 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="h-10 w-full rounded-md border border-border bg-card px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     />
                   </div>
                 </div>

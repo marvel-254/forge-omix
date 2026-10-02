@@ -45,7 +45,7 @@ export function Stepper({
                 'w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm transition-all flex-shrink-0',
                 isCompleted && 'bg-green-600 text-white',
                 isActive && 'bg-blue-600 text-white ring-2 ring-blue-300',
-                isNext && 'bg-neutral-200 text-neutral-500 cursor-not-allowed'
+                isNext && 'bg-neutral-200 text-muted-foreground cursor-not-allowed'
               )}
             >
               {isCompleted ? '✓' : index + 1}
@@ -55,7 +55,7 @@ export function Stepper({
             <div className={cn(isVertical ? 'absolute left-12 top-0' : 'ml-3')}>
               <p className={cn(
                 'text-sm font-medium',
-                isActive ? 'text-neutral-900' : 'text-neutral-600'
+                isActive ? 'text-foreground' : 'text-muted-foreground'
               )}>
                 {step}
               </p>

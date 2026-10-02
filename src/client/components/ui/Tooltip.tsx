@@ -24,7 +24,7 @@ export function Tooltip({
   className,
 }: TooltipProps) {
   const [isVisible, setIsVisible] = React.useState(false)
-  const timeoutRef = React.useRef<number>()
+  const timeoutRef = React.useRef<number | undefined>(undefined)
 
   const handleMouseEnter = () => {
     timeoutRef.current = window.setTimeout(() => {

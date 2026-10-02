@@ -19,7 +19,7 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
       timeout: 60000,
       env: {
-        API_PORT: '3102',
+        PORT: '3102',
         DATABASE_URL: 'file:/tmp/omix-e2e-test.db',
         AI_MODE: 'mock',
         GIT_WORKSPACES: '/tmp/omix-e2e-git',

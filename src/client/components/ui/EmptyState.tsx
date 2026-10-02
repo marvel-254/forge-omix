@@ -29,9 +29,9 @@ export function EmptyState({
       {icon && (
         <div className="text-6xl opacity-20 mb-4">{icon}</div>
       )}
-      <h3 className="text-lg font-semibold text-neutral-900 mb-2">{title}</h3>
+      <h3 className="text-lg font-semibold text-foreground mb-2">{title}</h3>
       {description && (
-        <p className="text-neutral-600 text-sm max-w-sm mb-6">{description}</p>
+        <p className="text-muted-foreground text-sm max-w-sm mb-6">{description}</p>
       )}
       {action && (
         <button

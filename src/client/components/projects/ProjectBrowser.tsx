@@ -43,17 +43,17 @@ export function ProjectBrowser({ onOpen }: { onOpen: (id: string) => void }) {
   )
 
   if (error && projects === null) {
-    return <p className="mt-1 text-xs text-neutral-400">{error}</p>
+    return <p className="mt-1 text-xs text-muted-foreground">{error}</p>
   }
 
   if (projects === null) {
-    return <p className="mt-1 text-xs text-neutral-400">Loading projects…</p>
+    return <p className="mt-1 text-xs text-muted-foreground">Loading projects…</p>
   }
 
   if (projects.length === 0) {
     return (
       <div className="mt-1 flex items-center gap-2">
-        <p className="text-xs text-neutral-400">No saved projects yet.</p>
+        <p className="text-xs text-muted-foreground">No saved projects yet.</p>
         <Button size="sm" variant="ghost" onClick={() => void refresh()}>
           Refresh
         </Button>
@@ -64,7 +64,7 @@ export function ProjectBrowser({ onOpen }: { onOpen: (id: string) => void }) {
   return (
     <div className="mt-3 space-y-1 text-left">
       <div className="flex items-center justify-between">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Your projects
         </h2>
         <Button size="sm" variant="ghost" onClick={() => void refresh()} aria-label="Refresh projects">
@@ -75,7 +75,7 @@ export function ProjectBrowser({ onOpen }: { onOpen: (id: string) => void }) {
         {projects.map((project) => (
           <li
             key={project.id}
-            className="group flex items-center gap-1 rounded-md px-1 py-0.5 hover:bg-neutral-50"
+            className="group flex items-center gap-1 rounded-md px-1 py-0.5 hover:bg-muted"
           >
             <button
               type="button"
@@ -86,7 +86,7 @@ export function ProjectBrowser({ onOpen }: { onOpen: (id: string) => void }) {
               <span className="block truncate text-sm font-medium text-neutral-800">
                 {project.name}
               </span>
-              <span className="block truncate text-xs text-neutral-400">
+              <span className="block truncate text-xs text-muted-foreground">
                 {project.id} · v{project.version}
               </span>
             </button>

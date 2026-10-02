@@ -41,13 +41,13 @@ export function ProjectSettings({ onClose }: { onClose: () => void }) {
       role="presentation"
     >
       <div
-        className="w-full max-w-md rounded-xl bg-white p-5 shadow-xl"
+        className="w-full max-w-md rounded-xl bg-card p-5 shadow-xl"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-label="Project settings"
       >
-        <h2 className="mb-4 text-base font-semibold tracking-tight text-neutral-900">
+        <h2 className="mb-4 text-base font-semibold tracking-tight text-foreground">
           Project settings
         </h2>
         <div className="space-y-3">
@@ -64,7 +64,7 @@ export function ProjectSettings({ onClose }: { onClose: () => void }) {
             placeholder="1.0.0"
             onChange={(e) => setVersion(e.target.value)}
           />
-          <div className="rounded-md bg-neutral-50 px-3 py-2 text-xs text-neutral-500">
+          <div className="rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">
             <p>
               ID: <span className="font-mono">{project.id}</span>
             </p>

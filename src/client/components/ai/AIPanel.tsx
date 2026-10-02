@@ -180,19 +180,19 @@ export function AIPanel({
       role="presentation"
     >
       <div
-        className="flex h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl bg-white shadow-xl"
+        className="flex h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl bg-card shadow-xl"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-label="AI assistant"
       >
         <div className="flex items-center gap-2 border-b px-4 py-2.5">
-          <h2 className="text-sm font-semibold text-neutral-900">AI assistant</h2>
+          <h2 className="text-sm font-semibold text-foreground">AI assistant</h2>
           <select
             value={model}
             onChange={(e) => setModel(e.target.value)}
             aria-label="Model"
-            className="max-w-48 rounded-md border border-neutral-300 bg-white px-2 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="max-w-48 rounded-md border border-border bg-card px-2 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             {(models ?? []).map((m) => (
               <option key={m.id} value={m.id}>
@@ -206,7 +206,7 @@ export function AIPanel({
             onChange={(e) => setLevel(e.target.value as ContextLevel)}
             aria-label="Context level"
             title="How much project context leaves the machine"
-            className="rounded-md border border-neutral-300 bg-white px-2 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="rounded-md border border-border bg-card px-2 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <option value="minimal">Minimal context</option>
             <option value="standard">Standard context</option>
@@ -247,8 +247,8 @@ export function AIPanel({
                 </div>
               )}
               {entries.length === 0 && (
-                <div className="rounded-lg bg-neutral-50 p-3 text-xs leading-relaxed text-neutral-500">
-                  <p className="font-medium text-neutral-700">Try asking for a component:</p>
+                <div className="rounded-lg bg-muted p-3 text-xs leading-relaxed text-muted-foreground">
+                  <p className="font-medium text-foreground/80">Try asking for a component:</p>
                   <p className="mt-1">“Add a primary button labeled Checkout” — the reply includes an
                   operation you can apply straight to the canvas.</p>
                 </div>
@@ -257,7 +257,7 @@ export function AIPanel({
                 <div key={i} className={entry.role === 'user' ? 'text-right' : 'text-left'}>
                   <div
                     className={`inline-block max-w-[90%] whitespace-pre-wrap rounded-lg px-3 py-2 text-left text-sm ${
-                      entry.role === 'user' ? 'bg-primary-500 text-white' : 'bg-neutral-100 text-neutral-800'
+                      entry.role === 'user' ? 'bg-primary-500 text-white' : 'bg-accent text-neutral-800'
                     }`}
                   >
                     {entry.content}
@@ -265,11 +265,11 @@ export function AIPanel({
                 </div>
               ))}
               {streaming && entries[entries.length - 1]?.role !== 'assistant' && (
-                <p className="text-xs text-neutral-400">Thinking…</p>
+                <p className="text-xs text-muted-foreground">Thinking…</p>
               )}
               {pendingOps.length > 0 && (
-                <div className="space-y-2 rounded-lg border border-neutral-200 p-3">
-                  <h3 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                <div className="space-y-2 rounded-lg border border-border p-3">
+                  <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     Suggested changes
                   </h3>
                   {pendingOps.map((pending) => {
@@ -281,7 +281,7 @@ export function AIPanel({
                         : `${(op.page as unknown as Record<string, unknown>).title ?? (op.page as unknown as Record<string, unknown>).id}`
                     return (
                       <div key={pending.key} className="flex items-center gap-2 text-sm">
-                        <span className="min-w-0 flex-1 truncate text-neutral-700">{summary}</span>
+                        <span className="min-w-0 flex-1 truncate text-foreground/80">{summary}</span>
                         <Button size="sm" variant="outline" disabled={done} onClick={() => applyOp(pending)}>
                           {done ? 'Applied ✓' : 'Apply'}
                         </Button>

@@ -55,7 +55,7 @@ export function AvatarGroup({
       {remaining > 0 && (
         <div
           className={cn(
-            'rounded-full border-2 border-white bg-neutral-200 text-neutral-600 flex items-center justify-center font-medium',
+            'rounded-full border-2 border-white bg-neutral-200 text-muted-foreground flex items-center justify-center font-medium',
             sizeVariants[size],
             overlapVariants[size]
           )}

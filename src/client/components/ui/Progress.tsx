@@ -38,8 +38,8 @@ export function Progress({
     <div className={cn(className)}>
       {(label || showLabel) && (
         <div className="flex justify-between items-center mb-2">
-          <span className="text-sm font-medium text-neutral-700">{label}</span>
-          <span className="text-sm text-neutral-600">{Math.round(percentage)}%</span>
+          <span className="text-sm font-medium text-foreground/80">{label}</span>
+          <span className="text-sm text-muted-foreground">{Math.round(percentage)}%</span>
         </div>
       )}
       <div className={cn('w-full bg-neutral-200 rounded-full overflow-hidden', sizeVariants[size])}>

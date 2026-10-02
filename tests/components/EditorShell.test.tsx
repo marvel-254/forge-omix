@@ -1,8 +1,9 @@
-import { describe, it, expect, beforeAll, beforeEach } from 'vitest'
+import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest'
 import React from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { act } from 'react'
 import { EditorShell } from '@client/app/EditorShell'
+import { MemoryRouter } from 'react-router-dom'
 import { useSchemaStore } from '@client/store/schemaStore'
 
 /**
@@ -47,7 +48,6 @@ beforeEach(() => {
     canvasRevision: 0,
   })
 })
-
 describe('EditorShell (smoke render)', () => {
   let container: HTMLDivElement
   let root: Root
@@ -58,9 +58,16 @@ describe('EditorShell (smoke render)', () => {
     root = createRoot(container)
   })
 
+  afterEach(async () => {
+    await act(async () => {
+      root.unmount()
+    })
+    container.remove()
+  })
+
   it('renders the onboarding empty state when no project is loaded', () => {
     act(() => {
-      root.render(<EditorShell />)
+      root.render(<MemoryRouter><EditorShell /></MemoryRouter>)
     })
     expect(container.textContent).toContain('forge@omix')
     expect(container.textContent).toContain('Create new project')
@@ -70,20 +77,17 @@ describe('EditorShell (smoke render)', () => {
 
   it('creates a project from the empty state and renders the shell', () => {
     act(() => {
-      root.render(<EditorShell />)
+      root.render(<MemoryRouter><EditorShell /></MemoryRouter>)
     })
-
     const createButton = Array.from(container.querySelectorAll('button')).find(
       (b) => b.textContent === 'Create new project'
     )
     expect(createButton).toBeDefined()
-
     act(() => {
-      // React 18 delegates native events at the root, so a real DOM click
+      // React 19 delegates native events at the root, so a real DOM click
       // reaches the button's onClick without @testing-library.
-      ;(createButton as HTMLButtonElement).click()
+      createButton!.dispatchEvent(new MouseEvent('click', { bubbles: true }))
     })
-
     // Store was seeded
     const state = useSchemaStore.getState()
     expect(state.project).not.toBeNull()
@@ -106,7 +110,7 @@ describe('EditorShell (smoke render)', () => {
       useSchemaStore.getState().actions.createProject('My Custom Project')
     })
     act(() => {
-      root.render(<EditorShell />)
+      root.render(<MemoryRouter><EditorShell /></MemoryRouter>)
     })
     expect(container.textContent).toContain('My Custom Project')
   })

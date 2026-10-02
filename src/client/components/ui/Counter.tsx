@@ -44,13 +44,13 @@ export function Counter({
   }
 
   return (
-    <div className={cn('inline-flex items-center border border-neutral-300 rounded-md', className)}>
+    <div className={cn('inline-flex items-center border border-border rounded-md', className)}>
       <button
         onClick={handleDecrement}
         disabled={disabled || value <= min}
         className={cn(
           buttonSizes[size],
-          'hover:bg-neutral-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+          'hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
         )}
       >
         −
@@ -70,7 +70,7 @@ export function Counter({
         disabled={disabled || value >= max}
         className={cn(
           buttonSizes[size],
-          'hover:bg-neutral-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+          'hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
         )}
       >
         +

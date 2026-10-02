@@ -16,8 +16,8 @@ const textVariants = cva('', {
       xs: 'text-xs',
     },
     textColor: {
-      default: 'text-neutral-900',
-      muted: 'text-neutral-500',
+      default: 'text-foreground',
+      muted: 'text-muted-foreground',
       primary: 'text-blue-600',
       success: 'text-green-600',
       warning: 'text-yellow-600',
@@ -40,7 +40,7 @@ interface TextProps {
 }
 
 export function Text({ variant, textColor, className, children }: TextProps) {
-  const Element = (variant?.startsWith('h') ? variant : 'span') as keyof JSX.IntrinsicElements
+  const Element = (variant?.startsWith('h') ? variant : 'span') as keyof import('react').JSX.IntrinsicElements
 
   return (
     <Element className={cn(textVariants({ variant, textColor }), className)}>

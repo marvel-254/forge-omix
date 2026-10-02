@@ -39,14 +39,14 @@ const statusLabels: Record<DeploymentStatus, string> = {
 }
 
 const statusClasses: Record<DeploymentStatus, string> = {
-  queued: 'bg-neutral-100 text-neutral-700',
+  queued: 'bg-accent text-foreground/80',
   building: 'bg-amber-100 text-amber-800',
   ready: 'bg-blue-100 text-blue-800',
   deploying: 'bg-blue-100 text-blue-800',
   live: 'bg-emerald-100 text-emerald-800',
   failed: 'bg-red-100 text-red-800',
   rolled_back: 'bg-violet-100 text-violet-800',
-  deleted: 'bg-neutral-200 text-neutral-600',
+  deleted: 'bg-neutral-200 text-muted-foreground',
 }
 
 function formatTimestamp(value: string): string {
@@ -255,7 +255,7 @@ export function DeploymentPanel({ projectId, onClose }: { projectId: string; onC
     >
       <div
         ref={dialogRef}
-        className="flex h-[85vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl bg-white shadow-xl"
+        className="flex h-[85vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl bg-card shadow-xl"
         onClick={(event) => event.stopPropagation()}
         onKeyDown={(event) => {
           if (event.key === 'Escape') {
@@ -285,10 +285,10 @@ export function DeploymentPanel({ projectId, onClose }: { projectId: string; onC
       >
         <div className="flex items-center gap-3 border-b px-4 py-2.5">
           <div>
-            <h2 id={titleId} className="text-sm font-semibold text-neutral-900">
+            <h2 id={titleId} className="text-sm font-semibold text-foreground">
               Deployments
             </h2>
-            <p className="text-xs text-neutral-500">Project {projectId}</p>
+            <p className="text-xs text-muted-foreground">Project {projectId}</p>
           </div>
           <div className="ml-auto flex items-center gap-2">
             <Button size="sm" variant="outline" onClick={() => void loadDeployments()} disabled={loading}>
@@ -328,8 +328,8 @@ export function DeploymentPanel({ projectId, onClose }: { projectId: string; onC
             </p>
           )}
 
-          <section aria-labelledby="create-preview-heading" className="rounded-lg border bg-neutral-50 p-3">
-            <h3 id="create-preview-heading" className="text-sm font-semibold text-neutral-900">
+          <section aria-labelledby="create-preview-heading" className="rounded-lg border bg-muted p-3">
+            <h3 id="create-preview-heading" className="text-sm font-semibold text-foreground">
               Create preview deployment
             </h3>
             <form
@@ -356,13 +356,13 @@ export function DeploymentPanel({ projectId, onClose }: { projectId: string; onC
           <div className="mt-4 grid min-h-80 gap-4 md:grid-cols-[240px_minmax(0,1fr)]">
             <section aria-labelledby="deployment-history-heading">
               <div className="mb-2 flex items-center justify-between">
-                <h3 id="deployment-history-heading" className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                <h3 id="deployment-history-heading" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   History
                 </h3>
-                {loading && <span className="text-xs text-neutral-400">Loading…</span>}
+                {loading && <span className="text-xs text-muted-foreground">Loading…</span>}
               </div>
               {deployments.length === 0 ? (
-                <p className="rounded-md border border-dashed px-3 py-6 text-center text-xs text-neutral-500">
+                <p className="rounded-md border border-dashed px-3 py-6 text-center text-xs text-muted-foreground">
                   No deployments yet.
                 </p>
               ) : (
@@ -376,18 +376,18 @@ export function DeploymentPanel({ projectId, onClose }: { projectId: string; onC
                         className={`w-full rounded-md border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
                           deployment.id === selectedId
                             ? 'border-primary-300 bg-primary-50'
-                            : 'border-neutral-200 hover:bg-neutral-50'
+                            : 'border-border hover:bg-muted'
                         }`}
                       >
                         <span className="flex items-center justify-between gap-2">
-                          <span className="truncate text-sm font-medium text-neutral-900">
+                          <span className="truncate text-sm font-medium text-foreground">
                             {deployment.environment}
                           </span>
                           <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${statusClasses[deployment.status]}`}>
                             {statusLabels[deployment.status]}
                           </span>
                         </span>
-                        <span className="mt-1 block truncate text-xs text-neutral-500">
+                        <span className="mt-1 block truncate text-xs text-muted-foreground">
                           {deployment.version ?? 'No version'} · {formatTimestamp(deployment.createdAt)}
                         </span>
                       </button>
@@ -401,17 +401,17 @@ export function DeploymentPanel({ projectId, onClose }: { projectId: string; onC
               {selected ? (
                 <>
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 id="deployment-details-heading" className="text-sm font-semibold text-neutral-900">
+                    <h3 id="deployment-details-heading" className="text-sm font-semibold text-foreground">
                       {selected.environment} deployment
                     </h3>
                     <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClasses[selected.status]}`}>
                       {statusLabels[selected.status]}
                     </span>
                   </div>
-                  <p className="mt-1 break-all font-mono text-xs text-neutral-400">{selected.id}</p>
+                  <p className="mt-1 break-all font-mono text-xs text-muted-foreground">{selected.id}</p>
 
                   <div className="mt-4">
-                    <div className="mb-1 flex items-center justify-between text-xs text-neutral-500">
+                    <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
                       <span>Lifecycle progress</span>
                       <span>{statusProgress[selected.status]}%</span>
                     </div>
@@ -421,7 +421,7 @@ export function DeploymentPanel({ projectId, onClose }: { projectId: string; onC
                       value={statusProgress[selected.status]}
                       aria-label={`Deployment lifecycle progress: ${statusLabels[selected.status]}`}
                     />
-                    <p className="mt-1 text-xs text-neutral-500">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       Server status: {statusLabels[selected.status]}. Progress reflects the lifecycle stage, not build completion.
                     </p>
                   </div>
@@ -435,20 +435,20 @@ export function DeploymentPanel({ projectId, onClose }: { projectId: string; onC
 
                   <dl className="mt-4 grid gap-x-4 gap-y-2 text-xs sm:grid-cols-2">
                     <div>
-                      <dt className="text-neutral-400">Version</dt>
-                      <dd className="mt-0.5 text-neutral-700">{selected.version ?? '—'}</dd>
+                      <dt className="text-muted-foreground">Version</dt>
+                      <dd className="mt-0.5 text-foreground/80">{selected.version ?? '—'}</dd>
                     </div>
                     <div>
-                      <dt className="text-neutral-400">Commit</dt>
-                      <dd className="mt-0.5 break-all font-mono text-neutral-700">{selected.commitHash ?? '—'}</dd>
+                      <dt className="text-muted-foreground">Commit</dt>
+                      <dd className="mt-0.5 break-all font-mono text-foreground/80">{selected.commitHash ?? '—'}</dd>
                     </div>
                     <div>
-                      <dt className="text-neutral-400">Created</dt>
-                      <dd className="mt-0.5 text-neutral-700">{formatTimestamp(selected.createdAt)}</dd>
+                      <dt className="text-muted-foreground">Created</dt>
+                      <dd className="mt-0.5 text-foreground/80">{formatTimestamp(selected.createdAt)}</dd>
                     </div>
                     <div>
-                      <dt className="text-neutral-400">Updated</dt>
-                      <dd className="mt-0.5 text-neutral-700">{formatTimestamp(selected.updatedAt)}</dd>
+                      <dt className="text-muted-foreground">Updated</dt>
+                      <dd className="mt-0.5 text-foreground/80">{formatTimestamp(selected.updatedAt)}</dd>
                     </div>
                   </dl>
 
@@ -505,20 +505,20 @@ export function DeploymentPanel({ projectId, onClose }: { projectId: string; onC
 
                   <div className="mt-5 border-t pt-4">
                     <div className="flex items-center justify-between">
-                      <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Logs</h4>
+                      <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Logs</h4>
                       <Button size="sm" variant="ghost" onClick={() => void loadLogs(selected.id)} disabled={loadingLogs}>
                         {loadingLogs ? 'Loading…' : 'Reload logs'}
                       </Button>
                     </div>
                     {loadingLogs ? (
-                      <p className="mt-2 text-xs text-neutral-400">Loading logs…</p>
+                      <p className="mt-2 text-xs text-muted-foreground">Loading logs…</p>
                     ) : logs.length === 0 ? (
-                      <p className="mt-2 text-xs text-neutral-400">No lifecycle logs returned.</p>
+                      <p className="mt-2 text-xs text-muted-foreground">No lifecycle logs returned.</p>
                     ) : (
                       <ol className="mt-2 space-y-1.5">
                         {logs.map((log) => (
                           <li key={log.id} className="rounded-md bg-neutral-950 px-3 py-2 font-mono text-xs text-neutral-100">
-                            <div className="flex flex-wrap gap-x-2 text-neutral-400">
+                            <div className="flex flex-wrap gap-x-2 text-muted-foreground">
                               <time dateTime={log.createdAt}>{formatTimestamp(log.createdAt)}</time>
                               <span>{log.event}</span>
                             </div>
@@ -530,7 +530,7 @@ export function DeploymentPanel({ projectId, onClose }: { projectId: string; onC
                   </div>
                 </>
               ) : (
-                <div className="flex h-full items-center justify-center text-sm text-neutral-400">
+                <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
                   Select or create a deployment to inspect its status and logs.
                 </div>
               )}

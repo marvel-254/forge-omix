@@ -1,4 +1,6 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { toggleTheme } from '../lib/theme'
 import { useSchemaStore } from '../store/schemaStore'
 import { Canvas } from '../canvas/Canvas'
 import ComponentLibrary from '../components/library/ComponentLibrary'
@@ -41,6 +43,10 @@ export function EditorShell() {
   const project = useSchemaStore((s) => s.project)
   const activePageId = useSchemaStore((s) => s.activePageId)
   const saveState = useSchemaStore((s) => s.saveState)
+  const undo = useSchemaStore((s) => s.undo)
+  const redo = useSchemaStore((s) => s.redo)
+  const canUndo = useSchemaStore((s) => s.past.length > 0)
+  const canRedo = useSchemaStore((s) => s.future.length > 0)
   const saveError = useSchemaStore((s) => s.saveError)
   const loadProject = useSchemaStore((s) => s.actions.loadProject)
   const loadFromServer = useSchemaStore((s) => s.loadFromServer)
@@ -75,6 +81,22 @@ export function EditorShell() {
   const [plansOpen, setPlansOpen] = useState(false)
   const [aiOpen, setAiOpen] = useState(false)
   const closeProject = useSchemaStore((s) => s.closeProject)
+  const { projectId } = useParams()
+  const navigate = useNavigate()
+
+  // Keep the URL in sync with the open project; deep-link into /project/:id.
+  useEffect(() => {
+    if (project && project.id !== projectId) {
+      navigate(`/project/${project.id}`, { replace: true })
+    } else if (!project && projectId) {
+      navigate('/', { replace: true })
+    }
+  }, [project, projectId, navigate])
+
+  // Open a project from a /project/:id deep link.
+  useEffect(() => {
+    if (projectId && project?.id !== projectId) void loadFromServer(projectId)
+  }, [projectId, project, loadFromServer])
 
   const handleAddComponent = useCallback(
     (type: ComponentType) => {
@@ -178,7 +200,7 @@ export function EditorShell() {
   if (!project) {
     return (
       <main
-        className="min-h-screen bg-neutral-100 flex items-center justify-center p-4"
+        className="min-h-screen bg-background flex items-center justify-center p-4"
         onDragOver={(e) => {
           if (e.dataTransfer.types.includes('Files')) {
             e.preventDefault()
@@ -200,8 +222,8 @@ export function EditorShell() {
         }}
       >
         <div
-          className={`w-full max-w-md rounded-xl border bg-white p-8 text-center shadow-sm transition-colors ${
-            dragActive ? 'border-primary-400 ring-2 ring-primary-200' : 'border-neutral-200'
+          className={`w-full max-w-md rounded-xl border bg-card p-8 text-card-foreground shadow-sm transition-colors ${
+            dragActive ? 'border-primary-400 ring-2 ring-primary-200' : 'border-border'
           }`}
         >
           {dragActive && (
@@ -227,8 +249,8 @@ export function EditorShell() {
           <div className="mx-auto mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-primary-500 text-lg font-bold text-white">
             O
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-neutral-900">forge@omix</h1>
-          <p className="mt-1 text-sm text-neutral-500 mb-6">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">forge@omix</h1>
+          <p className="mt-1 text-sm text-muted-foreground mb-6">
             AI-native visual software builder
           </p>
           <div className="flex flex-wrap items-center justify-center gap-2">
@@ -255,7 +277,7 @@ export function EditorShell() {
                   }
                 }}
               />
-              <span className="inline-flex h-10 cursor-pointer items-center justify-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-medium hover:bg-neutral-50">
+              <span className="inline-flex h-10 cursor-pointer items-center justify-center rounded-md border border-border bg-card px-4 py-2 text-sm font-medium hover:bg-accent">
                 Import JSON
               </span>
             </label>
@@ -265,10 +287,10 @@ export function EditorShell() {
               Start from a template
             </Button>
           </div>
-          <div className="my-5 flex items-center gap-3 text-xs text-neutral-400">
-            <span className="h-px flex-1 bg-neutral-200" />
+          <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
+            <span className="h-px flex-1 bg-border" />
             or open an existing project
-            <span className="h-px flex-1 bg-neutral-200" />
+            <span className="h-px flex-1 bg-border" />
           </div>
           <form
             className="flex items-center gap-2"
@@ -290,7 +312,7 @@ export function EditorShell() {
           {saveState === 'error' && saveError && (
             <p className="mt-2 text-xs text-red-600">{saveError}</p>
           )}
-          <p className="mt-5 text-xs leading-relaxed text-neutral-400">
+          <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
             Projects are saved to the API when the server is reachable; otherwise they stay local.
             Exports match the universal schema (schemas/project.schema.json). You can also drop a
             project or template JSON file anywhere on this screen.
@@ -300,7 +322,7 @@ export function EditorShell() {
          </div>
          {aiOpen && (
            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4">
-             <div className="flex h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl bg-white shadow-xl">
+             <div className="flex h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-xl">
                <AIProjectCreationWizard
                  onComplete={handleCreateFromBrief}
                  onCancel={() => setAiOpen(false)}
@@ -314,33 +336,59 @@ export function EditorShell() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-neutral-50">
+    <div className="h-screen flex flex-col bg-background">
       {/* Header */}
-      <header className="flex h-12 items-center gap-3 bg-white px-4 shadow-[0_1px_0_0_rgb(0_0_0/0.06)]">
+      <header className="flex h-12 items-center gap-3 border-b border-border bg-background/80 px-4 backdrop-blur">
         <Button
           size="sm"
           variant="ghost"
-          onClick={closeProject}
+          onClick={() => { closeProject(); navigate('/') }}
           aria-label="Back to projects"
           title="Back to projects"
         >
           ‹
         </Button>
-        <span className="font-semibold tracking-tight text-neutral-900">forge@omix</span>
-        <span className="h-4 w-px bg-neutral-200" aria-hidden="true" />
+        <span className="font-semibold tracking-tight text-foreground">forge@omix</span>
+        <span className="h-4 w-px bg-border" aria-hidden="true" />
         <button
           type="button"
           onClick={() => setSettingsOpen(true)}
           title="Project settings"
-          className="max-w-[240px] truncate rounded px-1 text-sm text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-800"
+          className="max-w-[240px] truncate rounded px-1 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         >
           {project.name}
         </button>
         <div className="ml-auto flex items-center gap-2">
-          <span className="text-xs tabular-nums text-neutral-400">v{project.version}</span>
+          <button
+            type="button"
+            onClick={undo}
+            disabled={!canUndo}
+            aria-label="Undo"
+            className="rounded-md border border-border px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
+          >
+            Undo
+          </button>
+          <button
+            type="button"
+            onClick={redo}
+            disabled={!canRedo}
+            aria-label="Redo"
+            className="rounded-md border border-border px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
+          >
+            Redo
+          </button>
+          <button
+            type="button"
+            onClick={() => toggleTheme()}
+            aria-label="Toggle dark mode"
+            className="rounded-md border border-border px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          >
+            Theme
+          </button>
+          <span className="text-xs tabular-nums text-muted-foreground">v{project.version}</span>
           <span
             className={`flex items-center gap-1.5 text-xs ${
-              saveState === 'error' ? 'text-red-600' : 'text-neutral-500'
+              saveState === 'error' ? 'text-red-600' : 'text-muted-foreground'
             }`}
             title={saveError ?? undefined}
           >
@@ -434,9 +482,9 @@ export function EditorShell() {
 
       <div className="flex flex-1 min-h-0">
         {/* Left sidebar: pages + component library */}
-        <aside className="w-64 shrink-0 border-r bg-white flex flex-col min-h-0">
+        <aside className="w-64 shrink-0 border-r border-border bg-background flex flex-col min-h-0">
           <div className="px-3 pt-3 pb-2 border-b">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-2">
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
               Pages
             </h2>
             <ul className="space-y-1">
@@ -448,12 +496,12 @@ export function EditorShell() {
                     aria-pressed={p.id === activePageId}
                     className={`flex-1 min-w-0 text-left px-2 py-1.5 rounded-md text-sm transition-colors ${
                       p.id === activePageId
-                        ? 'bg-primary-100 text-primary-900 font-medium'
-                        : 'hover:bg-neutral-100 text-neutral-700'
+                        ? 'bg-primary-100 text-primary-900 font-medium dark:bg-primary-900/40 dark:text-primary-100'
+                        : 'hover:bg-accent text-foreground/80'
                     }`}
                   >
                     <span className="block truncate leading-tight">{p.title}</span>
-                    <span className="block truncate text-xs leading-tight text-neutral-400">{p.path}</span>
+                    <span className="block truncate text-xs leading-tight text-muted-foreground">{p.path}</span>
                   </button>
                   {pages.length > 1 && (
                     <Button
@@ -496,7 +544,7 @@ export function EditorShell() {
         </ErrorBoundary>
 
         {/* Right sidebar: panels */}
-        <aside className="w-72 shrink-0 border-l bg-white flex flex-col min-h-0">
+        <aside className="w-72 shrink-0 border-l border-border bg-background flex flex-col min-h-0">
           <div className="flex border-b">
             {(['properties', 'layers'] as const).map((tab) => (
               <button
@@ -506,8 +554,8 @@ export function EditorShell() {
                 aria-pressed={panelTab === tab}
                 className={`flex-1 px-3 py-2 text-sm capitalize transition-colors ${
                   panelTab === tab
-                    ? 'border-b-2 border-primary-500 text-primary-700 font-medium'
-                    : 'text-neutral-500 hover:text-neutral-800'
+                    ? 'border-b-2 border-primary-500 text-primary-700 font-medium dark:text-primary-300'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {tab}

@@ -59,10 +59,10 @@ export function Pagination({
             onClick={() => onPageChange(1)}
             disabled={currentPage === 1}
             className={cn(
-              'px-3 py-2 rounded border border-neutral-300 text-sm font-medium transition-colors',
+              'px-3 py-2 rounded border border-border text-sm font-medium transition-colors',
               currentPage === 1
                 ? 'opacity-50 cursor-not-allowed'
-                : 'hover:bg-neutral-100 hover:border-neutral-400'
+                : 'hover:bg-accent hover:border-border'
             )}
           >
             ← First
@@ -71,10 +71,10 @@ export function Pagination({
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage === 1}
             className={cn(
-              'px-3 py-2 rounded border border-neutral-300 text-sm font-medium transition-colors',
+              'px-3 py-2 rounded border border-border text-sm font-medium transition-colors',
               currentPage === 1
                 ? 'opacity-50 cursor-not-allowed'
-                : 'hover:bg-neutral-100 hover:border-neutral-400'
+                : 'hover:bg-accent hover:border-border'
             )}
           >
             ← Prev
@@ -84,7 +84,7 @@ export function Pagination({
 
       {pages.map((page, index) =>
         page === '...' ? (
-          <span key={`dots-${index}`} className="px-2 text-neutral-400">
+          <span key={`dots-${index}`} className="px-2 text-muted-foreground">
             …
           </span>
         ) : (
@@ -96,7 +96,7 @@ export function Pagination({
               'px-3 py-2 rounded border text-sm font-medium transition-colors',
               currentPage === page
                 ? 'bg-blue-600 text-white border-blue-600'
-                : 'border-neutral-300 hover:bg-neutral-100 hover:border-neutral-400'
+                : 'border-border hover:bg-accent hover:border-border'
             )}
           >
             {page}
@@ -110,10 +110,10 @@ export function Pagination({
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
             className={cn(
-              'px-3 py-2 rounded border border-neutral-300 text-sm font-medium transition-colors',
+              'px-3 py-2 rounded border border-border text-sm font-medium transition-colors',
               currentPage === totalPages
                 ? 'opacity-50 cursor-not-allowed'
-                : 'hover:bg-neutral-100 hover:border-neutral-400'
+                : 'hover:bg-accent hover:border-border'
             )}
           >
             Next →
@@ -122,10 +122,10 @@ export function Pagination({
             onClick={() => onPageChange(totalPages)}
             disabled={currentPage === totalPages}
             className={cn(
-              'px-3 py-2 rounded border border-neutral-300 text-sm font-medium transition-colors',
+              'px-3 py-2 rounded border border-border text-sm font-medium transition-colors',
               currentPage === totalPages
                 ? 'opacity-50 cursor-not-allowed'
-                : 'hover:bg-neutral-100 hover:border-neutral-400'
+                : 'hover:bg-accent hover:border-border'
             )}
           >
             Last →

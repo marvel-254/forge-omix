@@ -43,7 +43,7 @@ export function Dropdown({
           />
           <div
             className={cn(
-              'absolute z-50 mt-2 w-48 bg-white rounded-lg shadow-lg border border-neutral-200 overflow-hidden',
+              'absolute z-50 mt-2 w-48 bg-card rounded-lg shadow-lg border border-border overflow-hidden',
               align === 'right' ? 'right-0' : 'left-0'
             )}
           >
@@ -59,7 +59,7 @@ export function Dropdown({
                   }}
                   disabled={item.disabled}
                   className={cn(
-                    'w-full flex items-center gap-2 px-4 py-2 text-sm text-left hover:bg-neutral-100 transition-colors',
+                    'w-full flex items-center gap-2 px-4 py-2 text-sm text-left hover:bg-accent transition-colors',
                     item.disabled && 'opacity-50 cursor-not-allowed'
                   )}
                 >

@@ -118,7 +118,7 @@ const TokenEditor: React.FC = () => {
         <div key={key} className="space-y-1">
           <label className="block text-sm font-medium text-gray-700">{key}</label>
           <div className="p-4 rounded-lg" style={{ boxShadow: String(value ?? '') }}>
-            <span className="text-xs text-neutral-500 break-all">{String(value ?? '')}</span>
+            <span className="text-xs text-muted-foreground break-all">{String(value ?? '')}</span>
           </div>
         </div>
       ))}

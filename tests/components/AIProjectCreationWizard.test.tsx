@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import React from 'react'
 import { act } from 'react'
-import { Simulate } from 'react-dom/test-utils'
 import { createRoot } from 'react-dom/client'
 import { AIProjectCreationWizard } from '@client/components/ai/AIProjectCreationWizard'
 import {
@@ -19,7 +18,7 @@ function setValue(element: HTMLInputElement | HTMLTextAreaElement, value: string
   const setter = Object.getOwnPropertyDescriptor(prototype, 'value')?.set
   act(() => {
     setter?.call(element, value)
-    Simulate.change(element, { target: { value } } as never)
+    element.dispatchEvent(new Event('input', { bubbles: true }))
   })
 }
 

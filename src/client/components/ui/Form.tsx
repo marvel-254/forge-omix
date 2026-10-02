@@ -40,7 +40,7 @@ export function FormLabel({
   return (
     <label
       htmlFor={htmlFor}
-      className={cn('block text-sm font-medium text-neutral-700 mb-2', className)}
+      className={cn('block text-sm font-medium text-foreground/80 mb-2', className)}
     >
       {children}
       {required && <span className="text-red-600 ml-1">*</span>}

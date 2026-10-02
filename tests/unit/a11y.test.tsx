@@ -3,6 +3,7 @@ import React from 'react'
 import { renderToString } from 'react-dom/server'
 import axe from 'axe-core'
 import { EditorShell } from '@client/app/EditorShell'
+import { MemoryRouter } from 'react-router-dom'
 import { useSchemaStore } from '@client/store/schemaStore'
 
 /**
@@ -16,7 +17,7 @@ const DISABLED = ['color-contrast', 'html-has-lang', 'document-title', 'meta-vie
 
 async function auditCurrentShell(): Promise<string[]> {
   document.documentElement.innerHTML = ''
-  document.body.innerHTML = renderToString(<EditorShell />)
+  document.body.innerHTML = renderToString(<MemoryRouter><EditorShell /></MemoryRouter>)
   const results = await axe.run(document, {
     rules: Object.fromEntries(DISABLED.map((id) => [id, { enabled: false }])),
   })

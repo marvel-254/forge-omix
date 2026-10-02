@@ -42,27 +42,27 @@ export function Accordion({
   }
 
   return (
-    <div className={cn('border border-neutral-200 rounded-lg overflow-hidden', className)}>
+    <div className={cn('border border-border rounded-lg overflow-hidden', className)}>
       {items.map((item) => (
-        <div key={item.value} className="border-b border-neutral-200 last:border-b-0">
+        <div key={item.value} className="border-b border-border last:border-b-0">
           <button
             onClick={() => !item.disabled && toggleItem(item.value)}
             disabled={item.disabled}
             className={cn(
-              'w-full flex items-center justify-between px-4 py-3 font-medium text-neutral-900 hover:bg-neutral-50 transition-colors',
+              'w-full flex items-center justify-between px-4 py-3 font-medium text-foreground hover:bg-muted transition-colors',
               item.disabled && 'opacity-50 cursor-not-allowed'
             )}
           >
             <span>{item.title}</span>
             <span className={cn(
-              'transition-transform text-neutral-500',
+              'transition-transform text-muted-foreground',
               openItems.has(item.value) ? 'rotate-180' : ''
             )}>
               ▼
             </span>
           </button>
           {openItems.has(item.value) && (
-            <div className="px-4 py-3 bg-neutral-50 text-neutral-700 text-sm">
+            <div className="px-4 py-3 bg-muted text-foreground/80 text-sm">
               {item.content}
             </div>
           )}

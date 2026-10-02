@@ -40,7 +40,7 @@ export function Menu({
             'flex items-center gap-2 px-3 py-2 rounded text-sm transition-colors',
             item.active
               ? 'bg-blue-600 text-white'
-              : 'text-neutral-700 hover:bg-neutral-100',
+              : 'text-foreground/80 hover:bg-accent',
             item.disabled && 'opacity-50 cursor-not-allowed'
           )}
         >

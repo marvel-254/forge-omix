@@ -130,7 +130,7 @@ export function PlanSelector({ projectId, onClose }: PlanSelectorProps) {
     >
       <div
         ref={dialogRef}
-        className="flex h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl bg-white shadow-xl"
+        className="flex h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl bg-card shadow-xl"
         onClick={(event) => event.stopPropagation()}
         onKeyDown={(event) => {
           if (event.key === 'Escape') {
@@ -161,10 +161,10 @@ export function PlanSelector({ projectId, onClose }: PlanSelectorProps) {
       >
         <div className="flex items-start gap-3 border-b px-5 py-4">
           <div>
-            <h2 id={titleId} className="text-lg font-semibold text-neutral-900">
+            <h2 id={titleId} className="text-lg font-semibold text-foreground">
               Hosting plans
             </h2>
-            <p className="mt-1 text-sm text-neutral-500">Choose hosting for project {projectId}.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Choose hosting for project {projectId}.</p>
           </div>
           <Button
             ref={closeButtonRef}
@@ -191,12 +191,12 @@ export function PlanSelector({ projectId, onClose }: PlanSelectorProps) {
           )}
 
           <fieldset>
-            <legend className="text-sm font-semibold text-neutral-900">Select a plan</legend>
+            <legend className="text-sm font-semibold text-foreground">Select a plan</legend>
             <div className="mt-3 grid gap-3 md:grid-cols-3">
               {loading ? (
-                <p className="text-sm text-neutral-500">Loading plans…</p>
+                <p className="text-sm text-muted-foreground">Loading plans…</p>
               ) : plans.length === 0 ? (
-                <p className="text-sm text-neutral-500">No hosting plans are available.</p>
+                <p className="text-sm text-muted-foreground">No hosting plans are available.</p>
               ) : (
                 plans.map((plan) => {
                   const selected = plan.id === selectedPlanId
@@ -204,7 +204,7 @@ export function PlanSelector({ projectId, onClose }: PlanSelectorProps) {
                     <label
                       key={plan.id}
                       className={`cursor-pointer rounded-lg border p-4 transition-colors ${
-                        selected ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-200' : 'border-neutral-200 hover:bg-neutral-50'
+                        selected ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-200' : 'border-border hover:bg-muted'
                       }`}
                     >
                       <span className="flex items-start gap-2">
@@ -222,30 +222,30 @@ export function PlanSelector({ projectId, onClose }: PlanSelectorProps) {
                           className="mt-1"
                         />
                         <span>
-                          <span className="block font-semibold text-neutral-900">{plan.name}</span>
-                          <span className="block text-xs text-neutral-500">{plan.audience}</span>
+                          <span className="block font-semibold text-foreground">{plan.name}</span>
+                          <span className="block text-xs text-muted-foreground">{plan.audience}</span>
                         </span>
                       </span>
-                      <span className="mt-3 block text-sm text-neutral-700">{plan.description}</span>
+                      <span className="mt-3 block text-sm text-foreground/80">{plan.description}</span>
                       <span className="mt-3 block text-sm">
-                        <span className="block text-neutral-500">Promotional price</span>
-                        <span className="text-lg font-semibold text-neutral-900">
+                        <span className="block text-muted-foreground">Promotional price</span>
+                        <span className="text-lg font-semibold text-foreground">
                           {formatMoney(plan.pricing.promotional.amountMinor, plan.pricing.promotional.currency)}
                         </span>
                       </span>
                       <span className="mt-2 block text-sm">
-                        <span className="block text-neutral-500">Renewal price</span>
+                        <span className="block text-muted-foreground">Renewal price</span>
                         <span className="font-medium text-neutral-800">
                           {formatMoney(plan.pricing.renewal.amountMinor, plan.pricing.renewal.currency)}
                         </span>
                       </span>
-                      <span className="mt-3 block text-xs text-neutral-600">
+                      <span className="mt-3 block text-xs text-muted-foreground">
                         {plan.limits.websites} websites · {plan.limits.storageGb} GB storage ·{' '}
                         {plan.limits.monthlyVisits.toLocaleString()} visits/month
                       </span>
-                      <span className="mt-2 block text-xs text-neutral-600">{plan.features.join(' · ')}</span>
+                      <span className="mt-2 block text-xs text-muted-foreground">{plan.features.join(' · ')}</span>
                       {plan.trialPeriodDays && <span className="mt-2 block text-xs text-emerald-700">{plan.trialPeriodDays}-day trial</span>}
-                      {plan.gracePeriodDays && <span className="mt-1 block text-xs text-neutral-600">{plan.gracePeriodDays}-day grace period</span>}
+                      {plan.gracePeriodDays && <span className="mt-1 block text-xs text-muted-foreground">{plan.gracePeriodDays}-day grace period</span>}
                     </label>
                   )
                 })
@@ -253,8 +253,8 @@ export function PlanSelector({ projectId, onClose }: PlanSelectorProps) {
             </div>
           </fieldset>
 
-          <fieldset className="mt-5 rounded-lg border bg-neutral-50 p-4">
-            <legend className="px-1 text-sm font-semibold text-neutral-900">Payment term</legend>
+          <fieldset className="mt-5 rounded-lg border bg-muted p-4">
+            <legend className="px-1 text-sm font-semibold text-foreground">Payment term</legend>
             <div className="mt-2 flex gap-2" role="group" aria-label="Payment term">
               {([12, 36] as const).map((term) => (
                 <Button
@@ -278,7 +278,7 @@ export function PlanSelector({ projectId, onClose }: PlanSelectorProps) {
 
           {selectedPlan && !checkout && (
             <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t pt-4">
-              <p className="text-sm text-neutral-600">Selected: {selectedPlan.name} · {termMonths} months</p>
+              <p className="text-sm text-muted-foreground">Selected: {selectedPlan.name} · {termMonths} months</p>
               <Button onClick={() => void createCheckout()} disabled={busy || loading}>
                 {busy ? 'Creating…' : 'Continue to payment'}
               </Button>
@@ -287,27 +287,27 @@ export function PlanSelector({ projectId, onClose }: PlanSelectorProps) {
 
           {checkout && (
             <section aria-labelledby="order-summary-heading" className="mt-5 rounded-lg border border-primary-200 bg-primary-50 p-4">
-              <h3 id="order-summary-heading" className="text-sm font-semibold text-neutral-900">Order summary</h3>
+              <h3 id="order-summary-heading" className="text-sm font-semibold text-foreground">Order summary</h3>
               <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
                 <div>
-                  <dt className="text-neutral-500">Plan</dt>
-                  <dd className="font-medium text-neutral-900">{checkout.planSnapshot.name}</dd>
+                  <dt className="text-muted-foreground">Plan</dt>
+                  <dd className="font-medium text-foreground">{checkout.planSnapshot.name}</dd>
                 </div>
                 <div>
-                  <dt className="text-neutral-500">Term</dt>
-                  <dd className="font-medium text-neutral-900">{checkout.termMonths} months</dd>
+                  <dt className="text-muted-foreground">Term</dt>
+                  <dd className="font-medium text-foreground">{checkout.termMonths} months</dd>
                 </div>
                 <div>
-                  <dt className="text-neutral-500">Promotional total</dt>
-                  <dd className="font-medium text-neutral-900">{formatMoney(checkout.promotionalTotal, checkout.currency)}</dd>
+                  <dt className="text-muted-foreground">Promotional total</dt>
+                  <dd className="font-medium text-foreground">{formatMoney(checkout.promotionalTotal, checkout.currency)}</dd>
                 </div>
                 <div>
-                  <dt className="text-neutral-500">Renewal total</dt>
-                  <dd className="font-medium text-neutral-900">{formatMoney(checkout.renewalTotal, checkout.currency)}</dd>
+                  <dt className="text-muted-foreground">Renewal total</dt>
+                  <dd className="font-medium text-foreground">{formatMoney(checkout.renewalTotal, checkout.currency)}</dd>
                 </div>
                 <div>
-                  <dt className="text-neutral-500">Status</dt>
-                  <dd className="font-medium text-neutral-900">{checkoutStatusLabel(checkout.status)}</dd>
+                  <dt className="text-muted-foreground">Status</dt>
+                  <dd className="font-medium text-foreground">{checkoutStatusLabel(checkout.status)}</dd>
                 </div>
               </dl>
               <div className="mt-4 flex flex-wrap items-center justify-end gap-2">

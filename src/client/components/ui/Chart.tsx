@@ -160,8 +160,8 @@ const Chart = React.forwardRef<HTMLDivElement, ChartProps>(
             <Pie data={chartData} options={mergedOptions} />
           )
         ) : (
-          <div className="flex h-full min-h-[200px] w-full items-center justify-center rounded-lg bg-neutral-100">
-            <p className="text-sm text-neutral-500">Chart: no data</p>
+          <div className="flex h-full min-h-[200px] w-full items-center justify-center rounded-lg bg-accent">
+            <p className="text-sm text-muted-foreground">Chart: no data</p>
           </div>
         )}
       </div>

@@ -46,7 +46,7 @@ export function Switch({
         <div
           className={cn(
             thumbSizes[size],
-            'rounded-full bg-white shadow transition-transform duration-200',
+            'rounded-full bg-card shadow transition-transform duration-200',
             checked ? 'translate-x-4' : 'translate-x-0.5'
           )}
         />

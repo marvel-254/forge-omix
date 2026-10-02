@@ -5,7 +5,7 @@ import { cn } from '@client/lib/utils'
 const tabsVariants = cva('', {
   variants: {
     variant: {
-      default: 'border-b border-neutral-200',
+      default: 'border-b border-border',
       pill: 'gap-2',
       underline: '',
     },
@@ -21,10 +21,10 @@ const tabTriggerVariants = cva(
     variants: {
       variant: {
         default:
-          'text-neutral-600 hover:text-neutral-900 data-[state=active]:text-neutral-900 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:-mb-[2px]',
-        pill: 'rounded-full bg-neutral-100 text-neutral-600 hover:bg-neutral-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white',
+          'text-muted-foreground hover:text-foreground data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:-mb-[2px]',
+        pill: 'rounded-full bg-accent text-muted-foreground hover:bg-neutral-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white',
         underline:
-          'text-neutral-600 hover:text-neutral-900 data-[state=active]:text-neutral-900 data-[state=active]:border-b-2 data-[state=active]:border-blue-600',
+          'text-muted-foreground hover:text-foreground data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-blue-600',
       },
     },
     defaultVariants: {

@@ -199,7 +199,7 @@ export function DomainPanel({ projectId, onClose }: DomainPanelProps) {
     >
       <div
         ref={dialogRef}
-        className="flex h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-white shadow-xl"
+        className="flex h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-card shadow-xl"
         onClick={(event) => event.stopPropagation()}
         onKeyDown={(event) => {
           if (event.key === 'Escape') {
@@ -230,10 +230,10 @@ export function DomainPanel({ projectId, onClose }: DomainPanelProps) {
       >
         <div className="flex items-start gap-3 border-b px-5 py-4">
           <div>
-            <h2 id={titleId} className="text-lg font-semibold text-neutral-900">
+            <h2 id={titleId} className="text-lg font-semibold text-foreground">
               Domains
             </h2>
-            <p className="mt-1 text-sm text-neutral-500">Manage domains for project {projectId}.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Manage domains for project {projectId}.</p>
           </div>
           <Button
             ref={closeButtonRef}
@@ -259,11 +259,11 @@ export function DomainPanel({ projectId, onClose }: DomainPanelProps) {
             </p>
           )}
 
-          <section aria-labelledby="domain-search-heading" className="rounded-lg border bg-neutral-50 p-4">
-            <h3 id="domain-search-heading" className="text-sm font-semibold text-neutral-900">
+          <section aria-labelledby="domain-search-heading" className="rounded-lg border bg-muted p-4">
+            <h3 id="domain-search-heading" className="text-sm font-semibold text-foreground">
               Search for a domain
             </h3>
-            <p className="mt-1 text-xs text-neutral-600">
+            <p className="mt-1 text-xs text-muted-foreground">
               Search results do not confirm availability. No registrar is connected.
             </p>
             <form
@@ -291,10 +291,10 @@ export function DomainPanel({ projectId, onClose }: DomainPanelProps) {
             {results.length > 0 && (
               <ul className="mt-4 space-y-2" aria-label="Domain search results">
                 {results.map((result) => (
-                  <li key={result.name} className="flex flex-wrap items-center gap-3 rounded-md border bg-white p-3">
+                  <li key={result.name} className="flex flex-wrap items-center gap-3 rounded-md border bg-card p-3">
                     <div className="min-w-0 flex-1">
-                      <p className="break-all text-sm font-medium text-neutral-900">{result.name}</p>
-                      <p className="mt-1 text-xs text-neutral-500">
+                      <p className="break-all text-sm font-medium text-foreground">{result.name}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
                         Availability: {String(result.availability)} · Verification: {result.verification.replace('_', ' ')} · Source: {result.source.replace('_', ' ')}
                       </p>
                     </div>
@@ -313,7 +313,7 @@ export function DomainPanel({ projectId, onClose }: DomainPanelProps) {
 
           <section aria-labelledby="account-domains-heading" className="mt-5">
             <div className="mb-3 flex items-center justify-between gap-3">
-              <h3 id="account-domains-heading" className="text-sm font-semibold text-neutral-900">
+              <h3 id="account-domains-heading" className="text-sm font-semibold text-foreground">
                 Account domains
               </h3>
               <Button size="sm" variant="outline" onClick={() => void loadDomains()} disabled={loading || busyAction !== null}>
@@ -321,9 +321,9 @@ export function DomainPanel({ projectId, onClose }: DomainPanelProps) {
               </Button>
             </div>
             {loading && domains.length === 0 ? (
-              <p className="text-sm text-neutral-500">Loading domains…</p>
+              <p className="text-sm text-muted-foreground">Loading domains…</p>
             ) : domains.length === 0 ? (
-              <p className="rounded-md border border-dashed px-3 py-6 text-center text-sm text-neutral-500">
+              <p className="rounded-md border border-dashed px-3 py-6 text-center text-sm text-muted-foreground">
                 No domains saved for this account.
               </p>
             ) : (
@@ -336,8 +336,8 @@ export function DomainPanel({ projectId, onClose }: DomainPanelProps) {
                     <li key={domain.id} className="rounded-lg border p-4">
                       <div className="flex flex-wrap items-start gap-3">
                         <div className="min-w-0 flex-1">
-                          <p className="break-all text-sm font-semibold text-neutral-900">{domain.name}</p>
-                          <p className="mt-1 text-xs text-neutral-500">
+                          <p className="break-all text-sm font-semibold text-foreground">{domain.name}</p>
+                          <p className="mt-1 text-xs text-muted-foreground">
                             {connectionLabel(currentConnection)} · Registration: {domain.registration.status.replace('_', ' ')}
                           </p>
                           {isPending && (
@@ -379,7 +379,7 @@ export function DomainPanel({ projectId, onClose }: DomainPanelProps) {
                           </Button>
                         </div>
                       </div>
-                      <p className="mt-3 text-xs text-neutral-500">
+                      <p className="mt-3 text-xs text-muted-foreground">
                         Registration is unavailable while no registrar is configured. A domain can be saved and connected, but registration is not claimed.
                       </p>
                     </li>

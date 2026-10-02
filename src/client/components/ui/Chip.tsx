@@ -25,7 +25,7 @@ export function Chip({
         'inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm border transition-all',
         selected
           ? 'bg-blue-600 text-white border-blue-600'
-          : 'bg-neutral-100 text-neutral-900 border-neutral-300 hover:bg-neutral-200',
+          : 'bg-accent text-foreground border-border hover:bg-neutral-200',
         disabled && 'opacity-50 cursor-not-allowed',
         !disabled && 'cursor-pointer',
         className

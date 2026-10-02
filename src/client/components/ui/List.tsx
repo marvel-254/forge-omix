@@ -18,15 +18,15 @@ export function List({ items, className }: ListProps) {
           key={idx}
           onClick={item.onClick}
           className={cn(
-            'flex items-center justify-between px-4 py-3 rounded-lg hover:bg-neutral-50 transition-colors',
+            'flex items-center justify-between px-4 py-3 rounded-lg hover:bg-muted transition-colors',
             item.onClick && 'cursor-pointer'
           )}
         >
           <div className="flex items-center gap-3">
             {item.icon && <span>{item.icon}</span>}
-            <span className="text-sm text-neutral-700">{item.label}</span>
+            <span className="text-sm text-foreground/80">{item.label}</span>
           </div>
-          <span className="text-sm text-neutral-500">{item.value}</span>
+          <span className="text-sm text-muted-foreground">{item.value}</span>
         </div>
       ))}
     </div>

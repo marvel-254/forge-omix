@@ -72,10 +72,10 @@ function LibraryCard({
       title={meta.description}
     >
       <div className="flex flex-col items-center">
-        <div className="mb-1 flex h-16 w-full items-center justify-center overflow-hidden text-neutral-700 [&>*]:max-w-full [&>*]:scale-[0.8]">
+        <div className="mb-1 flex h-16 w-full items-center justify-center overflow-hidden text-foreground/80 [&>*]:max-w-full [&>*]:scale-[0.8]">
           {createElement(PreviewComponent, previewPropsFor(meta.type))}
         </div>
-        <span className="text-xs font-medium text-neutral-600">{meta.label}</span>
+        <span className="text-xs font-medium text-muted-foreground">{meta.label}</span>
       </div>
     </Card>
   );
@@ -101,7 +101,7 @@ const ComponentLibrary: React.FC<ComponentLibraryProps> = ({ onSelectComponent }
 
   return (
     <div className="space-y-3">
-      <h2 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+      <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         Component Library
       </h2>
       <Input
@@ -112,7 +112,7 @@ const ComponentLibrary: React.FC<ComponentLibraryProps> = ({ onSelectComponent }
       />
       {searching ? (
         results.length === 0 ? (
-          <p className="px-1 py-4 text-center text-xs text-neutral-400">
+          <p className="px-1 py-4 text-center text-xs text-muted-foreground">
             No components match “{query.trim()}”.
           </p>
         ) : (
@@ -135,7 +135,7 @@ const ComponentLibrary: React.FC<ComponentLibraryProps> = ({ onSelectComponent }
           if (items.length === 0) return null;
           return (
             <section key={category.id} aria-label={category.label}>
-              <h3 className="mb-1.5 px-1 text-[11px] font-semibold uppercase tracking-wide text-neutral-400">
+              <h3 className="mb-1.5 px-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                 {category.label}
               </h3>
               <div className="grid grid-cols-2 gap-2">

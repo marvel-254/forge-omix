@@ -18,7 +18,7 @@ export function Divider({ text, className, orientation = 'horizontal' }: Divider
   return (
     <div className={cn('relative flex items-center gap-4 my-6', className)}>
       <div className="flex-1 h-px bg-neutral-200" />
-      <span className="text-sm text-neutral-500 font-medium px-2">{text}</span>
+      <span className="text-sm text-muted-foreground font-medium px-2">{text}</span>
       <div className="flex-1 h-px bg-neutral-200" />
     </div>
   )

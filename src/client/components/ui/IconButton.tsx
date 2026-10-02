@@ -17,10 +17,10 @@ const sizeVariants = {
 }
 
 const variantStyles = {
-  default: 'bg-white border border-neutral-300 hover:bg-neutral-50 text-neutral-700',
+  default: 'bg-card border border-border hover:bg-muted text-foreground/80',
   primary: 'bg-blue-600 border border-blue-600 hover:bg-blue-700 text-white',
   danger: 'bg-red-600 border border-red-600 hover:bg-red-700 text-white',
-  ghost: 'bg-transparent hover:bg-neutral-100 text-neutral-700',
+  ghost: 'bg-transparent hover:bg-accent text-foreground/80',
 }
 
 export function IconButton({

@@ -51,7 +51,7 @@ function PresetChip({
       className={`flex h-9 min-w-9 items-center justify-center rounded-md border px-2 ${
         selected
           ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-500'
-          : 'border-neutral-300 bg-white hover:border-neutral-400'
+          : 'border-border bg-card hover:border-border'
       }`}
     >
       {children}
@@ -79,7 +79,7 @@ function VariantPresetField({ value, onChange, Label, label }: CustomFieldParams
       {Label ? (
         <Label label={label} />
       ) : (
-        <div className="block text-xs font-medium text-neutral-600">{label ?? 'Variant'}</div>
+        <div className="block text-xs font-medium text-muted-foreground">{label ?? 'Variant'}</div>
       )}
       <div className="flex flex-wrap items-center gap-1.5">
         {VARIANT_PREVIEWS.map((v) => (
@@ -119,7 +119,7 @@ function SizePresetField({ value, onChange, Label, label }: CustomFieldParams<st
       {Label ? (
         <Label label={label} />
       ) : (
-        <div className="block text-xs font-medium text-neutral-600">{label ?? 'Size'}</div>
+        <div className="block text-xs font-medium text-muted-foreground">{label ?? 'Size'}</div>
       )}
       <div className="flex flex-wrap items-center gap-1.5">
         {SIZE_PREVIEWS.map((s) => (
@@ -154,7 +154,7 @@ function ElevationPresetField({ value, onChange, Label, label }: CustomFieldPara
       {Label ? (
         <Label label={label} />
       ) : (
-        <div className="block text-xs font-medium text-neutral-600">{label ?? 'Elevation'}</div>
+        <div className="block text-xs font-medium text-muted-foreground">{label ?? 'Elevation'}</div>
       )}
       <div className="flex flex-wrap items-center gap-1.5">
         {levels.map((level) => (
@@ -166,7 +166,7 @@ function ElevationPresetField({ value, onChange, Label, label }: CustomFieldPara
           >
             <span
               aria-hidden
-              className="block h-3 w-5 rounded bg-white"
+              className="block h-3 w-5 rounded bg-card"
               style={{
                 boxShadow:
                   level === 0
@@ -592,19 +592,19 @@ function DatasetsField({
       {Label ? (
         <Label label={label}>{null}</Label>
       ) : (
-        <div className="block text-xs font-medium text-neutral-600">{label ?? 'Datasets'}</div>
+        <div className="block text-xs font-medium text-muted-foreground">{label ?? 'Datasets'}</div>
       )}
       {rows.map((row, index) => {
         const { css } = resolveSwatchColor(row?.color)
         const isOpen = openIndex === index
         return (
-          <div key={index} className="rounded-md border border-neutral-200">
+          <div key={index} className="rounded-md border border-border">
             <button
               type="button"
               data-testid="dataset-row-summary"
               aria-expanded={isOpen}
               onClick={() => setOpenIndex(isOpen ? null : index)}
-              className="flex w-full items-center gap-2 px-2 py-1.5 text-left text-xs text-neutral-700"
+              className="flex w-full items-center gap-2 px-2 py-1.5 text-left text-xs text-foreground/80"
             >
               <span
                 aria-hidden
@@ -616,10 +616,10 @@ function DatasetsField({
               <span className="min-w-0 flex-1 truncate">
                 {row?.label?.trim() || `Series ${index + 1}`}
               </span>
-              <span aria-hidden className="text-neutral-400">{isOpen ? '▾' : '▸'}</span>
+              <span aria-hidden className="text-muted-foreground">{isOpen ? '▾' : '▸'}</span>
             </button>
             {isOpen && (
-              <div className="space-y-1.5 border-t border-neutral-200 p-2">
+              <div className="space-y-1.5 border-t border-border p-2">
                 <Input
                   label="Name"
                   value={typeof row?.label === 'string' ? row.label : ''}

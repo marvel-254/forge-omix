@@ -64,7 +64,7 @@ export function Canvas({ viewport = 'desktop', onViewportChange }: CanvasProps) 
     const current = state.project
     if (!current) return
     const updated = applyPuckContentToPage(current, state.activePageId, nextData.content)
-    state.actions.updateProject(updated as unknown as Record<string, unknown>)
+    state.actions.updateProjectFromCanvas(updated as unknown as Record<string, unknown>)
   }, [])
 
   const onAction = useCallback(
@@ -176,10 +176,10 @@ export function Canvas({ viewport = 'desktop', onViewportChange }: CanvasProps) 
 
   if (!project || !page) {
     return (
-      <div className="flex flex-1 items-center justify-center bg-neutral-50">
+      <div className="flex flex-1 items-center justify-center bg-muted">
         <div className="px-4 py-10 text-center">
-          <p className="text-sm font-medium text-neutral-600">No page open</p>
-          <p className="mt-1 text-xs text-neutral-400">Create a project to start editing.</p>
+          <p className="text-sm font-medium text-muted-foreground">No page open</p>
+          <p className="mt-1 text-xs text-muted-foreground">Create a project to start editing.</p>
         </div>
       </div>
     )
@@ -187,8 +187,8 @@ export function Canvas({ viewport = 'desktop', onViewportChange }: CanvasProps) 
 
   return (
     <main className="flex-1 flex flex-col min-h-0" aria-label="Canvas">
-      <div className="flex items-center gap-2 px-3 py-2 border-b bg-white">
-        <span className="text-xs font-medium text-neutral-500 mr-2">Viewport</span>
+      <div className="flex items-center gap-2 px-3 py-2 border-b bg-card">
+        <span className="text-xs font-medium text-muted-foreground mr-2">Viewport</span>
         {(Object.keys(VIEWPORT_WIDTHS) as CanvasViewport[]).map((vp) => (
           <Button
             key={vp}
@@ -200,7 +200,7 @@ export function Canvas({ viewport = 'desktop', onViewportChange }: CanvasProps) 
             {vp}
           </Button>
         ))}
-        <span className="ml-auto text-xs text-neutral-400">
+        <span className="ml-auto text-xs text-muted-foreground">
           {VIEWPORT_WIDTHS[viewport] ?? 1200}px
         </span>
         <Button
@@ -247,7 +247,7 @@ export function Canvas({ viewport = 'desktop', onViewportChange }: CanvasProps) 
         />
         {isDropTarget && (
           <div className="pointer-events-none absolute inset-0 z-50 flex items-center justify-center bg-primary-50/40">
-            <span className="rounded-md border border-primary-300 bg-white px-3 py-1.5 text-sm font-medium text-primary-700 shadow-sm">
+            <span className="rounded-md border border-primary-300 bg-card px-3 py-1.5 text-sm font-medium text-primary-700 shadow-sm">
               Drop {draggingType ?? 'component'} to add it to the page
             </span>
           </div>

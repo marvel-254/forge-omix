@@ -98,14 +98,14 @@ export function GitModal({ onClose }: { onClose: () => void }) {
       role="presentation"
     >
       <div
-        className="flex h-[80vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl bg-white shadow-xl"
+        className="flex h-[80vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl bg-card shadow-xl"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-label="Git workspaces"
       >
         <div className="flex items-center gap-2 border-b px-4 py-2.5">
-          <h2 className="text-sm font-semibold text-neutral-900">Git</h2>
+          <h2 className="text-sm font-semibold text-foreground">Git</h2>
           <Input
             value={dir}
             onChange={(e) => setDir(e.target.value)}
@@ -136,8 +136,8 @@ export function GitModal({ onClose }: { onClose: () => void }) {
           {status ? (
             <>
               <section aria-label="Status">
-                <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-600">
-                  <span className="rounded-full bg-neutral-100 px-2 py-0.5 font-mono">
+                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                  <span className="rounded-full bg-accent px-2 py-0.5 font-mono">
                     {status.branch || '(no branch)'}
                   </span>
                   {status.ahead > 0 && <span>↑{status.ahead} ahead</span>}
@@ -153,7 +153,7 @@ export function GitModal({ onClose }: { onClose: () => void }) {
                         <button
                           type="button"
                           onClick={() => void openDiff(file)}
-                          className="w-full truncate rounded px-2 py-1 text-left font-mono text-xs text-neutral-700 hover:bg-neutral-100"
+                          className="w-full truncate rounded px-2 py-1 text-left font-mono text-xs text-foreground/80 hover:bg-accent"
                         >
                           {file}
                         </button>
@@ -224,14 +224,14 @@ export function GitModal({ onClose }: { onClose: () => void }) {
                 </div>
               </section>
               {changedFiles !== null && (
-                <p className="text-xs text-neutral-500">
+                <p className="text-xs text-muted-foreground">
                   {changedFiles.length === 0
                     ? 'No files changed since that ref.'
                     : `Changed: ${changedFiles.join(', ')}`}
                 </p>
               )}
               <section aria-label="Branches" className="flex flex-wrap items-center gap-2">
-                <span className="text-xs text-neutral-500">
+                <span className="text-xs text-muted-foreground">
                   Branches: {(branches?.all ?? []).join(', ') || '—'}
                 </span>
                 <div className="flex flex-1 items-center gap-2">
@@ -265,25 +265,25 @@ export function GitModal({ onClose }: { onClose: () => void }) {
               </section>
               {diffFile && (
                 <section aria-label="Diff">
-                  <h3 className="mb-1 font-mono text-xs text-neutral-500">{diffFile}</h3>
+                  <h3 className="mb-1 font-mono text-xs text-muted-foreground">{diffFile}</h3>
                   <pre className="max-h-64 overflow-auto rounded-md bg-neutral-950 p-3 font-mono text-xs leading-relaxed text-neutral-100">
                     {diffText || 'Loading…'}
                   </pre>
                 </section>
               )}
               <section aria-label="History">
-                <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Recent commits
                 </h3>
                 {log.length === 0 ? (
-                  <p className="text-xs text-neutral-400">No commits yet.</p>
+                  <p className="text-xs text-muted-foreground">No commits yet.</p>
                 ) : (
                   <ul className="space-y-1">
                     {log.slice(0, 10).map((entry) => (
                       <li key={entry.hash} className="text-xs">
-                        <span className="font-mono text-neutral-400">{entry.hash.slice(0, 7)}</span>{' '}
-                        <span className="text-neutral-700">{entry.message}</span>{' '}
-                        <span className="text-neutral-400">
+                        <span className="font-mono text-muted-foreground">{entry.hash.slice(0, 7)}</span>{' '}
+                        <span className="text-foreground/80">{entry.message}</span>{' '}
+                        <span className="text-muted-foreground">
                           {entry.author} · {entry.date}
                         </span>
                       </li>
@@ -293,7 +293,7 @@ export function GitModal({ onClose }: { onClose: () => void }) {
               </section>
             </>
           ) : (
-            !error && <p className="text-xs text-neutral-400">Loading…</p>
+            !error && <p className="text-xs text-muted-foreground">Loading…</p>
           )}
         </div>
       </div>

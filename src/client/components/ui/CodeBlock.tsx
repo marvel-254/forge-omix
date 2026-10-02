@@ -44,7 +44,7 @@ export function CodeBlock({
         {lines.map((line, idx) => (
           <div key={idx} className="flex gap-4">
             {showLineNumbers && (
-              <span className="text-neutral-600 select-none w-8 text-right">
+              <span className="text-muted-foreground select-none w-8 text-right">
                 {idx + 1}
               </span>
             )}

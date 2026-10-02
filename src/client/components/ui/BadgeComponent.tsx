@@ -11,12 +11,12 @@ interface BadgeProps {
 }
 
 const variantStyles = {
-  default: 'bg-neutral-100 text-neutral-900 border border-neutral-200',
+  default: 'bg-accent text-foreground border border-border',
   primary: 'bg-blue-100 text-blue-900 border border-blue-200',
   success: 'bg-green-100 text-green-900 border border-green-200',
   warning: 'bg-yellow-100 text-yellow-900 border border-yellow-200',
   danger: 'bg-red-100 text-red-900 border border-red-200',
-  outline: 'border border-neutral-300 text-neutral-700 hover:bg-neutral-50',
+  outline: 'border border-border text-foreground/80 hover:bg-muted',
 }
 
 const sizeVariants = {

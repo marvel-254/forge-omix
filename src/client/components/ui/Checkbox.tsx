@@ -29,8 +29,8 @@ export function Checkbox({
         disabled={disabled}
         onChange={(e) => onChange?.(e.target.checked)}
         className={cn(
-          'h-4 w-4 rounded border border-neutral-300 cursor-pointer transition-colors',
-          checked ? 'bg-blue-600 border-blue-600' : 'bg-white hover:border-neutral-400',
+          'h-4 w-4 rounded border border-border cursor-pointer transition-colors',
+          checked ? 'bg-blue-600 border-blue-600' : 'bg-card hover:border-border',
           disabled ? 'opacity-50 cursor-not-allowed' : '',
           'appearance-none'
         )}

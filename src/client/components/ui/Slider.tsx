@@ -29,8 +29,8 @@ export function Slider({
     <div className={cn(className)}>
       {label && (
         <div className="flex justify-between items-center mb-2">
-          <label className="text-sm font-medium text-neutral-700">{label}</label>
-          {showValue && <span className="text-sm text-neutral-600">{value}</span>}
+          <label className="text-sm font-medium text-foreground/80">{label}</label>
+          {showValue && <span className="text-sm text-muted-foreground">{value}</span>}
         </div>
       )}
       <input

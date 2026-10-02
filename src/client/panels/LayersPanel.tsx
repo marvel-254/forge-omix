@@ -41,11 +41,11 @@ export function LayersPanel() {
   if (components.length === 0) {
     return (
       <div className="flex flex-col items-center px-4 py-10 text-center">
-        <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-lg bg-neutral-100 text-base text-neutral-400">
+        <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-base text-muted-foreground">
           ▤
         </div>
-        <p className="text-sm font-medium text-neutral-600">Page is empty</p>
-        <p className="mt-1 text-xs leading-relaxed text-neutral-400">
+        <p className="text-sm font-medium text-muted-foreground">Page is empty</p>
+        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
           Add components from the library to start building.
         </p>
       </div>
@@ -90,10 +90,10 @@ export function LayersPanel() {
               className={`flex-1 text-left px-2 py-1.5 rounded transition-colors cursor-grab active:cursor-grabbing ${
                 isSelected
                   ? 'bg-primary-100 text-primary-900 font-medium'
-                  : 'hover:bg-neutral-100 text-neutral-700'
+                  : 'hover:bg-accent text-foreground/80'
               }`}
             >
-              <span className="text-neutral-400 mr-2 select-none">
+              <span className="text-muted-foreground mr-2 select-none">
                 {isDropSlot ? '⤓' : `${index + 1}.`}
               </span>
               {component.name || component.type}

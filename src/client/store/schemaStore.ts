@@ -52,6 +52,11 @@ function scheduleAutosave(): void {
 
 interface SchemaState {
   project: ProjectSchema | null
+  /** Undo/redo stacks of JSON project snapshots (capped). */
+  past: string[]
+  future: string[]
+  undo: () => void
+  redo: () => void
   version: string
   lastValidated: Date | null
   // Canvas state
@@ -124,6 +129,10 @@ interface SchemaState {
 }
 
 const initialState: Omit<SchemaState, 'actions'> = {
+  past: [] as string[],
+  future: [] as string[],
+  undo: () => {},
+  redo: () => {},
   project: null,
   version: '1.0.0',
   lastValidated: null,
@@ -154,6 +163,8 @@ export const useSchemaStore = create<SchemaState>()(
       selectedIds: new Set<string>(),
       activePageId: null,
       canvasRevision: 0,
+      past: [] as string[],
+      future: [] as string[],
       saveState: 'idle' as SaveState,
       saveError: null,
       draggingLibraryType: null,
@@ -171,6 +182,36 @@ export const useSchemaStore = create<SchemaState>()(
         } as unknown as Record<string, unknown>)
       },
       setSaveState: (saveState, saveError = null) => set({ saveState, saveError }),
+      undo: () => {
+        const { project, past, future } = get()
+        if (!project || past.length === 0) return
+        const prevSnapshot = past[past.length - 1]
+        set({
+          past: past.slice(0, -1),
+          future: [JSON.stringify(project), ...future].slice(0, 100),
+          project: JSON.parse(prevSnapshot),
+          lastValidated: new Date(),
+          canvasRevision: get().canvasRevision + 1,
+          selectedIds: new Set<string>(),
+          saveState: get().saveState === 'saved' ? ('idle' as SaveState) : get().saveState,
+        })
+        scheduleAutosave()
+      },
+      redo: () => {
+        const { project, past, future } = get()
+        if (!project || future.length === 0) return
+        const nextSnapshot = future[0]
+        set({
+          past: [...past, JSON.stringify(project)].slice(-100),
+          future: future.slice(1),
+          project: JSON.parse(nextSnapshot),
+          lastValidated: new Date(),
+          canvasRevision: get().canvasRevision + 1,
+          selectedIds: new Set<string>(),
+          saveState: get().saveState === 'saved' ? ('idle' as SaveState) : get().saveState,
+        })
+        scheduleAutosave()
+      },
       closeProject: () => {
         cancelAutosave()
         set({
@@ -275,6 +316,8 @@ export const useSchemaStore = create<SchemaState>()(
               // server copy (if any) is only confirmed by an explicit save.
               saveState: 'idle' as SaveState,
               saveError: null,
+              past: [],
+              future: [],
             })
           }
           return result
@@ -340,6 +383,13 @@ export const useSchemaStore = create<SchemaState>()(
           const updated = { ...project, ...data, updatedAt: new Date().toISOString() }
           const result = validate(ProjectSchema, updated as unknown)
           if (result.valid && result.data) {
+            // Record the previous snapshot for undo (structural edits such as
+            // page add/remove, component add/move/delete route through here;
+            // Puck's own history covers canvas-level editing).
+            const prevSnapshot = get().project
+            if (prevSnapshot) {
+              set({ past: [...get().past, JSON.stringify(prevSnapshot)].slice(-100), future: [] })
+            }
             set({ project: result.data, lastValidated: new Date() })
             // Puck only reads `data` on mount, so external edits that change
             // page content (PropertiesPanel prop/style patches) must remount
