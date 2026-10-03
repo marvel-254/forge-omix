@@ -11,6 +11,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: forge-omix
+    image: ghcr.io/marvel-254/forge-omix/forge-omix-new:latest
     ports:
       - "8080:8080"
     volumes:
@@ -46,6 +47,7 @@ services:
       # native OpenAI; registered under the 'openai' model prefix.
       - OPENAI_COMPAT_BASE_URL=${OPENAI_COMPAT_BASE_URL:-}
       - OPENAI_COMPAT_API_KEY=${OPENAI_COMPAT_API_KEY:-}
+      - VITE_API_URL=
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://localhost:8080/health').then((r) => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"]

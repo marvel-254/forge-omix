@@ -5,6 +5,7 @@ FROM node:22-alpine AS builder
 
 # e2e browser binaries are not needed to build; skip Playwright's postinstall
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+ENV VITE_API_URL=
 
 WORKDIR /app
 
