@@ -28,6 +28,7 @@ import {
   ArticleConfig,
   LogoCloudConfig,
 } from './sections/content'
+import { MediaConfig } from './sections/media'
 
 /**
  * Canvas component registry.
@@ -1025,6 +1026,7 @@ export const canvasRegistry: Record<string, ComponentConfig> = {
   Article: ArticleConfig,
   Gallery: GalleryConfig,
   LogoCloud: LogoCloudConfig,
+  Media: MediaConfig,
   // Forms
   ContactForm: ContactFormConfig,
 }

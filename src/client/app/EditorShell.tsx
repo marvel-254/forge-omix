@@ -4,6 +4,7 @@ import { toggleTheme } from '../lib/theme'
 import { useSchemaStore } from '../store/schemaStore'
 import { Canvas } from '../canvas/Canvas'
 import ComponentLibrary from '../components/library/ComponentLibrary'
+import { MediaLibraryPanel } from '../components/media/MediaLibraryPanel'
 import { PropertiesPanel } from '../panels/PropertiesPanel'
 import { LayersPanel } from '../panels/LayersPanel'
 import { TokensPanel } from '../panels/TokensPanel'
@@ -67,6 +68,7 @@ export function EditorShell() {
     [setEditorPrefs]
   )
   const [panelTab, setPanelTab] = useState<PanelTab>('properties')
+  const [sidebarTab, setSidebarTab] = useState<'components' | 'media'>('components')
   const [newPagePath, setNewPagePath] = useState('')
   const [onboardingView, setOnboardingView] = useState<'home' | 'gallery'>('home')
   const [importedTemplate, setImportedTemplate] = useState<BuiltInTemplate | null>(null)
@@ -531,9 +533,41 @@ export function EditorShell() {
               </Button>
             </div>
           </div>
+          <div className="flex gap-1 border-b px-3 py-2" role="tablist" aria-label="Left sidebar">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={sidebarTab === 'components'}
+              onClick={() => setSidebarTab('components')}
+              className={`flex-1 rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${
+                sidebarTab === 'components'
+                  ? 'bg-muted text-foreground'
+                  : 'text-muted-foreground hover:bg-accent'
+              }`}
+            >
+              Components
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={sidebarTab === 'media'}
+              onClick={() => setSidebarTab('media')}
+              className={`flex-1 rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${
+                sidebarTab === 'media'
+                  ? 'bg-muted text-foreground'
+                  : 'text-muted-foreground hover:bg-accent'
+              }`}
+            >
+              Media
+            </button>
+          </div>
           <div className="flex-1 overflow-y-auto">
             <div className="p-3">
-              <ComponentLibrary onSelectComponent={handleAddComponent} />
+              {sidebarTab === 'media' ? (
+                <MediaLibraryPanel projectId={project?.id} />
+              ) : (
+                <ComponentLibrary onSelectComponent={handleAddComponent} />
+              )}
             </div>
           </div>
         </aside>

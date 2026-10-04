@@ -836,6 +836,125 @@ function generateLogoCloud(
   return { hooks: R.hooks, jsx: maybeHidden(R, jsx), needsNavigate: false }
 }
 
+const MEDIA_FITS = ['cover', 'contain', 'fill', 'none']
+const MEDIA_ROTATIONS = [0, 90, 180, 270]
+
+/** Record view of a nested prop; `{}` for anything that is not a plain object. */
+function objectProp(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {}
+}
+
+/** Finite number clamped to `min`..`max`; `fallback` for missing/garbage input. */
+function numberProp(value: unknown, min: number, max: number, fallback: number): number {
+  let parsed: number
+  if (typeof value === 'number') parsed = value
+  else if (typeof value === 'string' && value.trim() !== '') parsed = Number(value)
+  else return fallback
+  return Number.isFinite(parsed) ? Math.min(max, Math.max(min, parsed)) : fallback
+}
+
+/** `edit.filters` → CSS `filter` value; `''` when every control is at default. */
+function mediaFilter(edit: Record<string, unknown>): string {
+  const filters = objectProp(edit.filters)
+  const parts: string[] = []
+  const brightness = numberProp(filters.brightness, 0, 200, 100)
+  if (brightness !== 100) parts.push(`brightness(${brightness}%)`)
+  const contrast = numberProp(filters.contrast, 0, 200, 100)
+  if (contrast !== 100) parts.push(`contrast(${contrast}%)`)
+  const saturate = numberProp(filters.saturate, 0, 200, 100)
+  if (saturate !== 100) parts.push(`saturate(${saturate}%)`)
+  const blur = numberProp(filters.blur, 0, 100, 0)
+  if (blur !== 0) parts.push(`blur(${blur}px)`)
+  const grayscale = numberProp(filters.grayscale, 0, 100, 0)
+  if (grayscale !== 0) parts.push(`grayscale(${grayscale}%)`)
+  return parts.join(' ')
+}
+
+/** `edit` rotation/flip/crop → CSS `transform` value; `''` when nothing is set. */
+function mediaTransform(edit: Record<string, unknown>): string {
+  const rotation = numberProp(edit.rotation, 0, 270, 0)
+  const flip = objectProp(edit.flip)
+  const scale = numberProp(objectProp(edit.crop).scale, 1, 100, 1)
+  const parts: string[] = []
+  if (rotation !== 0 && MEDIA_ROTATIONS.includes(rotation)) parts.push(`rotate(${rotation}deg)`)
+  if (scale !== 1) parts.push(`scale(${scale})`)
+  if (flip.horizontal === true) parts.push('scaleX(-1)')
+  if (flip.vertical === true) parts.push('scaleY(-1)')
+  return parts.join(' ')
+}
+
+/** `<video>` playback attributes from `videoOptions`; autoplay forces muted. */
+function videoAttrs(options: Record<string, unknown>): string {
+  const autoplay = options.autoplay === true
+  const attrs: string[] = []
+  // a11y: a video is only left uncontrollable while it is muted and autoplaying
+  if (options.controls === true || !autoplay) attrs.push(' controls')
+  if (options.loop === true) attrs.push(' loop')
+  if (autoplay) attrs.push(' autoPlay')
+  if (options.muted === true || autoplay) attrs.push(' muted')
+  if (typeof options.poster === 'string' && options.poster) {
+    attrs.push(` poster="${escAttr(options.poster)}"`)
+  }
+  return attrs.join('')
+}
+
+/**
+ * Media block (docs/17): one image, GIF, or video asset. The canvas edit state
+ * is baked into inline `filter`/`transform` style — nothing that would be a
+ * no-op is emitted, so an untouched asset stays free of style noise.
+ */
+function generateMedia(
+  component: Component,
+  ctx: ComponentGenContext,
+  varName: string
+): GeneratedComponent {
+  const props = propsOf(component)
+  const R = setupResponsive(varName, props, responsiveMaps(component))
+  const src = typeof props.src === 'string' ? props.src : ''
+  const alt = typeof props.alt === 'string' ? props.alt : ''
+  const caption = props.caption
+  const fit = MEDIA_FITS.includes(String(props.fit)) ? String(props.fit) : 'cover'
+
+  const styleEntries = [
+    `objectFit: ${
+      R.overridden.has('fit')
+        ? `(${R.varName}R.fit as 'cover' | 'contain' | 'fill' | 'none')`
+        : JSON.stringify(fit)
+    }`,
+  ]
+  const edit = objectProp(props.edit)
+  const filter = mediaFilter(edit)
+  if (filter) styleEntries.push(`filter: ${JSON.stringify(filter)}`)
+  const transform = mediaTransform(edit)
+  if (transform) styleEntries.push(`transform: ${JSON.stringify(transform)}`)
+  const style = ` style={{ ${styleEntries.join(', ')} }}`
+  // JSX attribute literals are not JS strings: `"` ends the attribute, so the
+  // value must be entity-escaped rather than backslash-escaped.
+  const srcAttr = ref(R, 'src', `"${escAttr(src)}"`, 'string')
+  const altAttr = ref(R, 'alt', `"${escAttr(alt)}"`, 'string')
+
+  const media = src
+    ? props.mediaType === 'video'
+      ? `<video${videoAttrs(objectProp(props.videoOptions))} className="h-full w-full"${style}>` +
+        `<source src=${srcAttr} type="video/mp4" /></video>`
+      : `<img src=${srcAttr} alt=${altAttr} className="h-full w-full"${style} />`
+    : `<div className="h-64 w-full bg-muted" />`
+
+  const figcaption =
+    caption || R.overridden.has('caption')
+      ? `<figcaption className="px-4 py-3 text-sm text-muted-foreground">${scalarText(R, 'caption', caption)}</figcaption>`
+      : ''
+
+  const jsx =
+    `<figure className="w-full overflow-hidden rounded-xl border border-border bg-card"${styleAttr(component, ctx)}${a11yAttrs(component)}>` +
+    media +
+    figcaption +
+    `</figure>`
+  return { hooks: R.hooks, jsx: maybeHidden(R, jsx), needsNavigate: false }
+}
+
 /** Fallback for unknown types: JSON comment + nothing rendered. */
 function generateUnknown(component: Component): GeneratedComponent {
   const type = String(asComp(component).type ?? 'unknown')
@@ -894,6 +1013,8 @@ export function generateComponentJSX(
       return generateArticle(component, ctx, varName)
     case 'LogoCloud':
       return generateLogoCloud(component, ctx, varName)
+    case 'Media':
+      return generateMedia(component, ctx, varName)
     default:
       return generateUnknown(component)
   }

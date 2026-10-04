@@ -240,6 +240,21 @@ export const supportMessages = sqliteTable('support_messages', {
   createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
 })
 
+export const mediaAssets = sqliteTable('media_assets', {
+  id: text('id').primaryKey(),
+  accountId: text('account_id').notNull().references(() => accounts.id),
+  projectId: text('project_id').references(() => projects.id),
+  filename: text('filename').notNull(),
+  storedName: text('stored_name').notNull(),
+  mimeType: text('mime_type').notNull(),
+  mediaType: text('media_type').notNull(),
+  byteSize: integer('byte_size').notNull(),
+  width: integer('width'),
+  height: integer('height'),
+  alt: text('alt'),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+})
+
 export const schemaVersions = sqliteTable('schema_versions', {
   version: text('version').primaryKey(),
   name: text('name').notNull(),

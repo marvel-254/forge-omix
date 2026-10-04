@@ -134,6 +134,14 @@ export const COMPONENT_CATALOG: ComponentMeta[] = [
     glyph: '?',
   },
   {
+    type: 'Media',
+    category: 'content',
+    label: 'Media',
+    description: 'Image, animated GIF, or video',
+    glyph: '▣',
+    preview: 'glyph',
+  },
+  {
     type: 'Article',
     category: 'content',
     label: 'Article',
