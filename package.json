@@ -2,6 +2,7 @@
   "name": "forge-omix",
   "version": "0.1.0",
   "type": "module",
+  "packageManager": "pnpm@10.34.6",
   "scripts": {
     "dev": "vite",
     "dev:server": "tsx watch src/server/index.ts",

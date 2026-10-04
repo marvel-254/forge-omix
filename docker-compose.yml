@@ -11,7 +11,8 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: forge-omix
-    image: ghcr.io/marvel-254/forge-omix/forge-omix-new:latest
+    # Published by .github/workflows/docker.yml as ghcr.io/${{ github.repository }}
+    image: ghcr.io/marvel-254/forge-omix:latest
     ports:
       - "8080:8080"
     volumes:

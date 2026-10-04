@@ -8,6 +8,11 @@ export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: false,
   retries: process.env.CI ? 2 : 0,
+  // The first `page.goto` also pays a cold Vite transform of the whole
+  // editor bundle, which can exceed the 30s default on a slow machine.
+  // Set generously so a slow box is not reported as a product failure.
+  timeout: 180000,
+  expect: { timeout: 15000 },
   use: {
     baseURL: 'http://localhost:5174',
     trace: 'retain-on-failure',

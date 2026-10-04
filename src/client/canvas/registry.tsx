@@ -9,6 +9,25 @@ import { Table } from '../components/ui/Table'
 import { resolveTokenRefs } from './ComponentRenderer'
 import { useSchemaStore } from '../store/schemaStore'
 import { useInstancePresentation } from './presentation'
+// Website-building sections. Registered alongside the six core types so a
+// canvas drop can produce a complete page. Kept in dedicated modules because
+// they are large and independent of the core primitives.
+import {
+  HeroConfig,
+  FeaturesConfig,
+  PricingConfig,
+  TestimonialsConfig,
+  FaqConfig,
+  CtaBannerConfig,
+} from './sections/marketing'
+import {
+  FooterConfig,
+  StatsConfig,
+  GalleryConfig,
+  ContactFormConfig,
+  ArticleConfig,
+  LogoCloudConfig,
+} from './sections/content'
 
 /**
  * Canvas component registry.
@@ -992,6 +1011,22 @@ export const canvasRegistry: Record<string, ComponentConfig> = {
   Navbar: NavbarConfig,
   Chart: ChartConfig,
   Table: TableConfig,
+  // Sections
+  Hero: HeroConfig,
+  CtaBanner: CtaBannerConfig,
+  Footer: FooterConfig,
+  Stats: StatsConfig,
+  // Marketing
+  Features: FeaturesConfig,
+  Pricing: PricingConfig,
+  Testimonials: TestimonialsConfig,
+  Faq: FaqConfig,
+  // Content
+  Article: ArticleConfig,
+  Gallery: GalleryConfig,
+  LogoCloud: LogoCloudConfig,
+  // Forms
+  ContactForm: ContactFormConfig,
 }
 
 /** Canonical default props for a schema component type (empty object if unknown). */
