@@ -38,7 +38,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     if (this.state.error) {
       return (
         <div className="flex flex-1 flex-col items-center justify-center bg-muted px-4 py-10 text-center">
-          <p className="text-sm font-medium text-neutral-800">
+          <p className="text-sm font-medium text-foreground">
             Something went wrong{this.props.area ? ` in the ${this.props.area}` : ''}
           </p>
           <p className="mt-1 max-w-sm text-xs leading-relaxed text-muted-foreground">

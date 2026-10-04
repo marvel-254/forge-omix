@@ -96,7 +96,9 @@ describe('EditorShell (smoke render)', () => {
 
     // Shell chrome rendered
     expect(container.textContent).toContain('Pages')
-    expect(container.textContent).toContain('Component Library')
+    // Assert the library is populated via its cards, not a heading string —
+    // heading wording is free to change; the cards are the contract.
+    expect(container.querySelectorAll('[data-testid^="library-card-"]').length).toBeGreaterThan(0)
     expect(container.textContent).toContain('Export')
     expect(container.textContent).toContain('Deploy')
     expect(container.textContent).toContain('Account')

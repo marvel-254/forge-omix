@@ -6,6 +6,10 @@ dist/
 dist-server/
 coverage/
 
+# Playwright run artifacts (regenerated on every e2e run)
+test-results/
+playwright-report/
+
 # env & secrets
 .env
 .env.local

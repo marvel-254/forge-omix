@@ -2,9 +2,13 @@ export type Theme = 'light' | 'dark'
 
 const STORAGE_KEY = 'forge-theme'
 
+/**
+ * Dark is the product default; light is opt-in and persisted once chosen.
+ * Unknown/absent storage resolves to dark rather than flashing light first.
+ */
 export function getStoredTheme(): Theme {
-  if (typeof localStorage === 'undefined') return 'light'
-  return localStorage.getItem(STORAGE_KEY) === 'dark' ? 'dark' : 'light'
+  if (typeof localStorage === 'undefined') return 'dark'
+  return localStorage.getItem(STORAGE_KEY) === 'light' ? 'light' : 'dark'
 }
 
 export function applyTheme(theme: Theme): void {
