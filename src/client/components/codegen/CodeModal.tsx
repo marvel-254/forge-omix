@@ -1,5 +1,12 @@
 import { useMemo, useState } from 'react'
 import { generateProject, slugify, type GeneratedFile } from '../../../lib/codegen'
+import {
+  ASSET_DIR,
+  assetUrl,
+  collectMediaUrls,
+  rewriteMediaUrls,
+  storedNameOf,
+} from '../../../lib/codegen/mediaAssets'
 import { generateTasks } from '../../../lib/agent'
 import type { Project } from '@client/types/schema'
 import { Button } from '../ui/Button'
@@ -30,7 +37,7 @@ export function CodeModal({ project, onClose }: { project: Project; onClose: () 
   const handleCopy = async () => {
     if (!selected) return
     try {
-      await navigator.clipboard.writeText(selected.content)
+      await navigator.clipboard.writeText(selected.content ?? '')
       setStatus(`Copied ${selected.path}`)
     } catch {
       setStatus('Copy failed — select the text manually')
@@ -44,9 +51,41 @@ export function CodeModal({ project, onClose }: { project: Project; onClose: () 
       // Loaded on demand so the editor bundle stays lean.
       const { default: JSZip } = await import('jszip')
       const zip = new JSZip()
-      for (const file of files) {
-        zip.file(`${slug}/${file.path}`, file.content)
+
+      // Pull uploaded-asset bytes down first, then rewrite the markup to
+      // bundled `public/assets/` copies. Rewriting before the fetch would
+      // leave a dangling `/assets/...` reference whenever a download fails,
+      // so only assets that actually landed get rewritten.
+      const wanted = collectMediaUrls(project)
+      const fetched = new Map<string, Uint8Array>()
+      await Promise.all(
+        wanted.map(async (url) => {
+          const storedName = storedNameOf(url)
+          if (!storedName) return
+          try {
+            const response = await fetch(url)
+            if (!response.ok) return
+            fetched.set(storedName, new Uint8Array(await response.arrayBuffer()))
+          } catch {
+            // Offline or server error: leave the reference as the original URL.
+          }
+        })
+      )
+
+      const rewritten = rewriteMediaUrls(project, (storedName) =>
+        fetched.has(storedName) ? assetUrl(`${ASSET_DIR}/${storedName}`) : null
+      )
+      const bundled = generateProject(
+        rewritten.project as unknown as Parameters<typeof generateProject>[0]
+      )
+      for (const file of bundled) {
+        zip.file(`${slug}/${file.path}`, file.bytes ?? file.content ?? '')
       }
+      for (const [storedName, bytes] of fetched) {
+        zip.file(`${slug}/${ASSET_DIR}/${storedName}`, bytes)
+      }
+      const missing = wanted.length - fetched.size
+
       const blob = await zip.generateAsync({ type: 'blob' })
       const url = URL.createObjectURL(blob)
       const anchor = document.createElement('a')
@@ -54,7 +93,12 @@ export function CodeModal({ project, onClose }: { project: Project; onClose: () 
       anchor.download = `${slug}.zip`
       anchor.click()
       URL.revokeObjectURL(url)
-      setStatus(`Downloaded ${slug}.zip (${files.length} files)`)
+      const total = bundled.length + fetched.size
+      setStatus(
+        missing > 0
+          ? `Downloaded ${slug}.zip (${total} files) — ${missing} media file(s) unreachable`
+          : `Downloaded ${slug}.zip (${total} files)`
+      )
     } catch {
       setStatus('ZIP download failed — jszip could not be loaded')
     } finally {

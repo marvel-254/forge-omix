@@ -27,7 +27,7 @@ describe('account-scoped domain lifecycle', () => {
     root = await mkdtemp(join(tmpdir(), 'omix-domains-'))
     process.env.DATABASE_URL = `file:${join(root, 'test.db')}`
     const { SchemaVersionManager } = await import('@server/services/versionService')
-    expect(await SchemaVersionManager.runPendingMigrations(resolve('src/server/db/migrations'))).toBe(9)
+    expect(await SchemaVersionManager.runPendingMigrations(resolve('src/server/db/migrations'))).toBe(10)
 
     const authRouter = (await import('@server/routes/auth')).default
     const projectsRouter = (await import('@server/routes/projects')).default

@@ -5,6 +5,7 @@ import { join, dirname } from 'node:path'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 import { generateProject, type GeneratedFile } from '../../lib/codegen'
+import { bundleMedia } from './mediaExport'
 import type { Project } from '../types/schema'
 
 const execFileAsync = promisify(execFile)
@@ -79,7 +80,8 @@ async function writeTree(root: string, files: GeneratedFile[]) {
   for (const f of files) {
     const target = join(root, f.path)
     await mkdir(dirname(target), { recursive: true })
-    await writeFile(target, f.content)
+    if (f.bytes) await writeFile(target, f.bytes)
+    else await writeFile(target, f.content ?? '')
   }
 }
 
@@ -106,7 +108,14 @@ export async function generateSiteArchive(
   payload: unknown,
   opts: { runBuild?: boolean } = {}
 ): Promise<SiteArchiveResult> {
-  const files: GeneratedFile[] = [...generateProject(payload as Project), ...DEPLOY_EXTRA]
+  // Rewrite uploaded-media URLs to `public/assets/` before codegen runs, so
+  // the emitted markup points at the bundled copy rather than this server.
+  const bundled = await bundleMedia(payload as Project)
+  const files: GeneratedFile[] = [
+    ...generateProject(bundled.project),
+    ...bundled.files,
+    ...DEPLOY_EXTRA,
+  ]
   const root = await mkdtemp(join(tmpdir(), 'forge-omix-build-'))
   let built = false
   let buildError: string | undefined
@@ -128,7 +137,7 @@ export async function generateSiteArchive(
     }
 
     const zip = new JSZip()
-    for (const f of files) zip.file(f.path, f.content)
+    for (const f of files) zip.file(f.path, f.bytes ?? f.content ?? '')
 
     const distDir = join(root, 'dist')
     if (built && (await dirExists(distDir))) {

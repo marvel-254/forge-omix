@@ -11,7 +11,13 @@ import { generateAgentsMd, generateBuilderFiles, generateTasks } from '../agent'
 
 export interface GeneratedFile {
   path: string
-  content: string
+  /**
+   * Text payload. Omitted for binary assets, which carry `bytes` instead —
+   * a generated site embeds uploaded media as real files under `public/`.
+   */
+  content?: string
+  /** Raw asset bytes, for binary files an export must carry with it. */
+  bytes?: Uint8Array
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
