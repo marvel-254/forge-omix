@@ -3,6 +3,7 @@ import { generateAppFile, generatePageFile, pageComponentName } from './pages'
 import type { ComponentGenContext } from './components'
 import { generateTailwindExtend, generateTokensCss } from './tokens'
 import { generateAgentsMd, generateBuilderFiles, generateTasks } from '../agent'
+import { indexHead, robotsTxt, sitemapXml } from './seo'
 
 /**
  * Full project emission (docs/07 §7.1–§7.2, React + Vite target).
@@ -340,19 +341,19 @@ createRoot(document.getElementById('root')!).render(
 );
 `;
 
-const INDEX_HTML = `<!doctype html>
+function indexHtml(pages: Page[]): string {
+  return `<!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Omix App</title>
+    ${indexHead(pages)}
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-`;
+`
+}
 
 const GITIGNORE = `node_modules/
 dist/
@@ -418,7 +419,9 @@ export function generateProject(project: Project): GeneratedFile[] {
     { path: 'package.json', content: packageJson(slugify(name)) },
     { path: 'vite.config.ts', content: VITE_CONFIG },
     { path: 'tsconfig.json', content: TSCONFIG },
-    { path: 'index.html', content: INDEX_HTML },
+    { path: 'index.html', content: indexHtml(pages) },
+    { path: 'public/sitemap.xml', content: sitemapXml(pages) },
+    { path: 'public/robots.txt', content: robotsTxt() },
     { path: '.gitignore', content: GITIGNORE },
     { path: 'tailwind.config.js', content: tailwindConfig(tokens) },
     { path: 'src/index.css', content: indexCss(tokens) },

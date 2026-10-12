@@ -8,6 +8,7 @@ import { MediaLibraryPanel } from '../components/media/MediaLibraryPanel'
 import { PropertiesPanel } from '../panels/PropertiesPanel'
 import { LayersPanel } from '../panels/LayersPanel'
 import { TokensPanel } from '../panels/TokensPanel'
+import { SeoPanel } from '../components/seo/SeoPanel'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import type { ComponentType } from '../components/library'
@@ -34,7 +35,7 @@ import {
 } from '../templates/instantiate'
 import type { Component, Page } from '@client/types/schema'
 
-type PanelTab = 'properties' | 'layers' | 'tokens'
+type PanelTab = 'properties' | 'layers' | 'tokens' | 'seo'
 
 /**
  * Top-level builder layout: header, pages sidebar, canvas, and
@@ -580,7 +581,7 @@ export function EditorShell() {
         {/* Right sidebar: panels */}
         <aside className="w-72 shrink-0 border-l border-border bg-background flex flex-col min-h-0">
           <div className="flex border-b">
-            {(['properties', 'layers'] as const).map((tab) => (
+            {(['properties', 'layers', 'seo'] as const).map((tab) => (
               <button
                 key={tab}
                 type="button"
@@ -601,6 +602,8 @@ export function EditorShell() {
               <PropertiesPanel />
             ) : panelTab === 'tokens' ? (
               <TokensPanel />
+            ) : panelTab === 'seo' ? (
+              <SeoPanel />
             ) : (
               <LayersPanel />
             )}

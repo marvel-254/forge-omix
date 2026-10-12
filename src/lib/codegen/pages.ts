@@ -1,6 +1,7 @@
 import type { Component, Page } from '../../server/types/schema'
 import { generateComponentJSX, type ComponentGenContext } from './components'
 import { escAttr } from './escape'
+import { pageHead } from './seo'
 
 /**
  * Page + route generation (docs/07 §7.5, React + Vite target).
@@ -99,14 +100,20 @@ export function generatePageFile(
 
   const navigateDecl = needsNavigate ? `\n  const navigate = useNavigate();` : ''
   const hooksBlock = hooks.length > 0 ? `\n${hooks.join('\n')}` : ''
+  const head = pageHead(page)
 
   const code = `${imports.join('\n')}
 
 export function ${componentName}() {${navigateDecl}${hooksBlock}
   return (
-    <div data-page="${escAttr(componentName)}" data-title="${escAttr(page.title ?? componentName)}">
-      ${body}
-    </div>
+    <>
+      <head>
+        ${head}
+      </head>
+      <div data-page="${escAttr(componentName)}" data-title="${escAttr(page.title ?? componentName)}">
+        ${body}
+      </div>
+    </>
   );
 }
 `
