@@ -29,6 +29,7 @@ import {
   LogoCloudConfig,
 } from './sections/content'
 import { MediaConfig } from './sections/media'
+import { CommentsConfig } from './sections/comments'
 
 /**
  * Canvas component registry.
@@ -1029,6 +1030,8 @@ export const canvasRegistry: Record<string, ComponentConfig> = {
   Media: MediaConfig,
   // Forms
   ContactForm: ContactFormConfig,
+  // Community
+  Comments: CommentsConfig,
 }
 
 /** Canonical default props for a schema component type (empty object if unknown). */

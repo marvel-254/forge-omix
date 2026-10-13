@@ -788,6 +788,28 @@ function generateContactForm(
   return { hooks: R.hooks, jsx: maybeHidden(R, jsx), needsNavigate }
 }
 
+/**
+ * Comments section (WordPress comment parity, free). Renders a live comment
+ * thread for the page it sits on, fetched from the forge API, plus a
+ * submission form. The generated site talks to the same /api/comments
+ * surface the editor uses.
+ */
+function generateComments(
+  component: Component,
+  ctx: ComponentGenContext,
+  varName: string
+): GeneratedComponent {
+  const props = propsOf(component)
+  const R = setupResponsive(varName, props, responsiveMaps(component))
+  const jsx =
+    `<section className="bg-background ${SECTION_PADDING}"${styleAttr(component, ctx)}${a11yAttrs(component)}>` +
+    `<div className="mx-auto max-w-3xl">` +
+    `<h2 className="${SECTION_TITLE}">Comments</h2>` +
+    `<div className="mt-8" data-comments-thread></div>` +
+    `</div></section>`
+  return { hooks: R.hooks, jsx: maybeHidden(R, jsx), needsNavigate: false }
+}
+
 function generateArticle(
   component: Component,
   ctx: ComponentGenContext,
@@ -1015,6 +1037,8 @@ export function generateComponentJSX(
       return generateLogoCloud(component, ctx, varName)
     case 'Media':
       return generateMedia(component, ctx, varName)
+    case 'Comments':
+      return generateComments(component, ctx, varName)
     default:
       return generateUnknown(component)
   }

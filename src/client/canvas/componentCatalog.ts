@@ -15,6 +15,7 @@ export type ComponentCategory =
   | 'marketing'
   | 'content'
   | 'forms'
+  | 'community'
 
 export interface ComponentMeta {
   /** Schema component type; must match a key of canvasRegistry. */
@@ -46,6 +47,7 @@ export const COMPONENT_CATEGORIES: Array<{
   { id: 'content', label: 'Content', description: 'Editorial and media' },
   { id: 'forms', label: 'Forms', description: 'Capture input' },
   { id: 'dashboard', label: 'Dashboard', description: 'Data display' },
+  { id: 'community', label: 'Community', description: 'Engage your audience' },
 ]
 
 export const COMPONENT_CATALOG: ComponentMeta[] = [
@@ -183,6 +185,13 @@ export const COMPONENT_CATALOG: ComponentMeta[] = [
     label: 'Table',
     description: 'Sortable, filterable data table',
     glyph: '⊞',
+  },
+  {
+    type: 'Comments',
+    category: 'community',
+    label: 'Comments',
+    description: 'Live comment thread and submission form',
+    glyph: '❝',
   },
 ]
 

@@ -255,6 +255,17 @@ export const mediaAssets = sqliteTable('media_assets', {
   createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
 })
 
+export const comments = sqliteTable('comments', {
+  id: text('id').primaryKey(),
+  projectId: text('project_id').references(() => projects.id),
+  pageId: text('page_id'),
+  author: text('author').notNull(),
+  email: text('email'),
+  content: text('content').notNull(),
+  status: text('status').notNull().default('approved'),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+})
+
 export const schemaVersions = sqliteTable('schema_versions', {
   version: text('version').primaryKey(),
   name: text('name').notNull(),

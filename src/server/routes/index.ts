@@ -16,6 +16,7 @@ import domainsRouter from './domains';
 import accountRouter from './account';
 import supportRouter from './support';
 import mediaRouter from './media';
+import commentsRouter from './comments';
 
 router.route('/projects', projectsRouter);
 router.route('/pages', pagesRouter);
@@ -30,5 +31,6 @@ router.route('/account', accountRouter);
 router.route('/', commerceRouter);
 router.route('/support', supportRouter);
 router.route('/media', mediaRouter);
+router.route('/comments', commentsRouter);
 
 export default router;
